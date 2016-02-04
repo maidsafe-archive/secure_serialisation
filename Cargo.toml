@@ -1,0 +1,10 @@
+[package]
+authors = ["David Irvine <david.irvine@maidsafe.net>"]
+name = "secure_serialisation"
+version = "0.1.0"
+
+[dependencies]
+byteorder = "0.4.2"
+maidsafe_utilities = "0.1.5"
+rustc-serialize = "0.3.16"
+sodiumoxide = "0.0.9"
