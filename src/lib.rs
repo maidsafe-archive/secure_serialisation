@@ -45,8 +45,8 @@
 //!
 //! This implementation will encrypt data with a nonce and then serialise the payload. The nonce
 //! is then prepended to the beginning of the message and pulled off first at the remote end.
-//! Thsi provides a clean secure mechnism fro sending data between entities who have session
-//! based keypairs. It SHOULD NOT be used for permenent keys.
+//! This provides a clean secure mechanism for sending data between entities who have session
+//! based keypairs. It SHOULD NOT be used for permanent keys.
 //!
 
 #![doc(html_logo_url =
@@ -74,13 +74,14 @@
 #![cfg_attr(feature="clippy", deny(clippy_pedantic))]
 
 extern crate sodiumoxide;
+#[macro_use]
 extern crate maidsafe_utilities;
 extern crate rustc_serialize;
 
 use sodiumoxide::crypto::box_;
 use sodiumoxide::crypto::box_::{PublicKey, SecretKey};
 use maidsafe_utilities::serialisation;
-use rustc_serialize::{Encodable, Decodable};
+use rustc_serialize::{Decodable, Encodable};
 
 /// Error types, hopefully sodiumoxide eventually defines errors properly, otherwise this makes
 /// little sense really
@@ -99,29 +100,31 @@ impl From<serialisation::SerialisationError> for SecureSerialisationError {
 }
 
 impl From<()> for SecureSerialisationError {
-    fn from(_: ())-> Self {
+    fn from(_: ()) -> Self {
         SecureSerialisationError::CrytpoError
     }
 }
 
 #[derive (RustcEncodable, RustcDecodable)]
 struct Payload {
-    ciphertext : Vec<u8>,
-    nonce : box_::Nonce
+    ciphertext: Vec<u8>,
+    nonce: box_::Nonce,
 }
 
 /// Prepare an ecodable data element for transmission to another process whose public_key we
 /// know.
-pub fn serialise<T>(their_public_key: &PublicKey, our_secret_key : &SecretKey, data: &T)-> Result<Vec<u8>, SecureSerialisationError>
+pub fn serialise<T>(data: &T,
+                    their_public_key: &PublicKey,
+                    our_secret_key: &SecretKey)
+                    -> Result<Vec<u8>, SecureSerialisationError>
     where T: Encodable
 {
-    let nonce =  box_::gen_nonce();
+    let nonce = box_::gen_nonce();
     let serialised_data = try!(serialisation::serialise(data));
-    let full_payload =
-        Payload {
-            ciphertext : box_::seal(&serialised_data, &nonce, their_public_key, our_secret_key),
-            nonce : nonce,
-        };
+    let full_payload = Payload {
+        ciphertext: box_::seal(&serialised_data, &nonce, their_public_key, our_secret_key),
+        nonce: nonce,
+    };
 
     Ok(try!(serialisation::serialise(&full_payload)))
 }
@@ -129,15 +132,40 @@ pub fn serialise<T>(their_public_key: &PublicKey, our_secret_key : &SecretKey, d
 
 /// Parse a data type from an ecnoded message, sucess ensures teh message was from the holder of the
 /// private_key related to the public_key we know of the recipient
-pub fn deserialise<T>(message: &[u8], their_public_key: &PublicKey, our_secret_key: &SecretKey)-> Result<T, SecureSerialisationError>
-where T: Decodable
+pub fn deserialise<T>(message: &[u8],
+                      their_public_key: &PublicKey,
+                      our_secret_key: &SecretKey)
+                      -> Result<T, SecureSerialisationError>
+    where T: Decodable
 {
     let payload = try!(serialisation::deserialise::<Payload>(message));
-    let plain_serialised_data = try!(box_::open(&payload.ciphertext, &payload.nonce, their_public_key, our_secret_key));
+    let plain_serialised_data = try!(box_::open(&payload.ciphertext,
+                                                &payload.nonce,
+                                                their_public_key,
+                                                our_secret_key));
     Ok(try!(serialisation::deserialise(&plain_serialised_data)))
 }
 
+#[cfg(test)]
+mod test {
+    use super::*;
+    use sodiumoxide::crypto::box_;
 
-#[test]
-fn it_works() {
+    #[test]
+    fn alice_to_bob_message() {
+        let bob_message = (vec![0u8, 1, 3, 9],
+                           vec![-1i64, 888, -8765],
+                           "Message from Bob for Alice, very secret".to_owned());
+        let (alice_public_key, alice_secret_key) = box_::gen_keypair();
+        let (bob_public_key, bob_secret_key) = box_::gen_keypair();
+
+        let bob_encrypted_message = unwrap_result!(serialise(&bob_message,
+                                                             &alice_public_key,
+                                                             &bob_secret_key));
+
+        let alice_decrypted_message: (Vec<u8>, Vec<i64>, String) =
+            unwrap_result!(deserialise(&bob_encrypted_message, &bob_public_key, &alice_secret_key));
+
+        assert_eq!(alice_decrypted_message, bob_message);
+    }
 }
