@@ -79,7 +79,7 @@ extern crate maidsafe_utilities;
 extern crate rustc_serialize;
 
 use sodiumoxide::crypto::box_;
-use sodiumoxide::crypto::box_::{PublicKey, SecretKey};
+use sodiumoxide::crypto::box_::{PrecomputedKey, PublicKey, SecretKey};
 use maidsafe_utilities::serialisation;
 use rustc_serialize::{Decodable, Encodable};
 
@@ -111,7 +111,31 @@ struct Payload {
     nonce: box_::Nonce,
 }
 
-/// Prepare an ecodable data element for transmission to another process whose public_key we
+/// Pre-compute a key for a session, Allows greater message throughput.
+pub fn pre_compute(their_public_key: &PublicKey, our_secret_key: &SecretKey) -> PrecomputedKey {
+    box_::precompute(their_public_key, our_secret_key)
+}
+
+/// Pre computed key version (less cpu intensive if many messages are transferred)
+/// Prepare an encodable data element for transmission to another process whose public_key we
+/// know.
+pub fn pre_computed_serialise<T>(data: &T,
+                                 pre_computed_key: &PrecomputedKey)
+                                 -> Result<Vec<u8>, SecureSerialisationError>
+    where T: Encodable
+{
+    let nonce = box_::gen_nonce();
+    let serialised_data = try!(serialisation::serialise(data));
+    let full_payload = Payload {
+        ciphertext: box_::seal_precomputed(&serialised_data, &nonce, pre_computed_key),
+        nonce: nonce,
+    };
+
+    Ok(try!(serialisation::serialise(&full_payload)))
+}
+
+
+/// Prepare an encodable data element for transmission to another process whose public_key we
 /// know.
 pub fn serialise<T>(data: &T,
                     their_public_key: &PublicKey,
@@ -129,8 +153,22 @@ pub fn serialise<T>(data: &T,
     Ok(try!(serialisation::serialise(&full_payload)))
 }
 
+/// Pre computed key version (less cpu intensive if many messages are transferred)
+/// Parse a data type from an encoded message, success ensures the message was from the holder of the
+/// private_key related to the public_key we know of the recipient
+pub fn pre_computed_deserialise<T>(message: &[u8],
+                                   pre_computed_key: &PrecomputedKey)
+                                   -> Result<T, SecureSerialisationError>
+    where T: Decodable
+{
+    let payload = try!(serialisation::deserialise::<Payload>(message));
+    let plain_serialised_data = try!(box_::open_precomputed(&payload.ciphertext,
+                                                            &payload.nonce,
+                                                            pre_computed_key));
+    Ok(try!(serialisation::deserialise(&plain_serialised_data)))
+}
 
-/// Parse a data type from an ecnoded message, sucess ensures teh message was from the holder of the
+/// Parse a data type from an encoded message, success ensures the message was from the holder of the
 /// private_key related to the public_key we know of the recipient
 pub fn deserialise<T>(message: &[u8],
                       their_public_key: &PublicKey,
@@ -145,6 +183,8 @@ pub fn deserialise<T>(message: &[u8],
                                                 our_secret_key));
     Ok(try!(serialisation::deserialise(&plain_serialised_data)))
 }
+
+
 
 #[cfg(test)]
 mod test {
@@ -165,6 +205,25 @@ mod test {
 
         let alice_decrypted_message: (Vec<u8>, Vec<i64>, String) =
             unwrap_result!(deserialise(&bob_encrypted_message, &bob_public_key, &alice_secret_key));
+
+        assert_eq!(alice_decrypted_message, bob_message);
+    }
+
+    #[test]
+    fn alice_to_bob_message_with_precomputed_keys() {
+        let bob_message = (vec![0u8, 1, 3, 9],
+                           vec![-1i64, 888, -8765],
+                           "Message from Bob for Alice, very secret".to_owned());
+        let (alice_public_key, alice_secret_key) = box_::gen_keypair();
+        let (bob_public_key, bob_secret_key) = box_::gen_keypair();
+        let bob_precomputed_key = box_::precompute(&alice_public_key, &bob_secret_key);
+        let alice_precomputed_key = box_::precompute(&bob_public_key, &alice_secret_key);
+        let bob_encrypted_message = unwrap_result!(pre_computed_serialise(&bob_message,
+                                                                          &bob_precomputed_key));
+
+        let alice_decrypted_message: (Vec<u8>, Vec<i64>, String) =
+            unwrap_result!(pre_computed_deserialise(&bob_encrypted_message,
+                                                    &alice_precomputed_key));
 
         assert_eq!(alice_decrypted_message, bob_message);
     }
