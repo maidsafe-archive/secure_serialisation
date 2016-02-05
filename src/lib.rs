@@ -48,6 +48,17 @@
 //! Where possible the precompute_* functions will lessen any cpu overhead in sending messages
 //! and should be preferred. This is not enforced to allow occasional sending of messages
 //! between parties using a simpler, although slower, method.
+//!
+//! These functions do not meant to provide non-repudiation. On the
+//! contrary: they  guaranteesrepudiability. A receiver
+//! can freely modify a message, and therefore cannot convince third
+//! parties that this particular message came from the sender. The sender
+//! and receiver are nevertheless protected against forgeries by other
+//! parties. In the terminology of
+//! http://groups.google.com/group/sci.crypt/msg/ec5c18b23b11d82c,
+//! this crate uses "public-key authenticators" rather than "public-key
+//! signatures."
+
 
 #![doc(html_logo_url =
            "https://raw.githubusercontent.com/maidsafe/QA/master/Images/maidsafe_logo.png",
