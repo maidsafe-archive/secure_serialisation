@@ -207,8 +207,8 @@ mod test {
         let bob_message = (vec![0u8, 1, 3, 9],
                            vec![-1i64, 888, -8765],
                            "Message from Bob for Alice, very secret".to_owned());
-        let (alice_public_key, alice_secret_key) = box_::gen_keypair();
-        let (bob_public_key, bob_secret_key) = box_::gen_keypair();
+        let (alice_public_key, alice_secret_key) = gen_keypair();
+        let (bob_public_key, bob_secret_key) = gen_keypair();
 
         let bob_encrypted_message = unwrap_result!(serialise(&bob_message,
                                                              &alice_public_key,
@@ -225,8 +225,8 @@ mod test {
         let bob_message = (vec![0u8, 1, 3, 9],
                            vec![-1i64, 888, -8765],
                            "Message from Bob for Alice, very secret".to_owned());
-        let (alice_public_key, alice_secret_key) = box_::gen_keypair();
-        let (bob_public_key, bob_secret_key) = box_::gen_keypair();
+        let (alice_public_key, alice_secret_key) = gen_keypair();
+        let (bob_public_key, bob_secret_key) = gen_keypair();
         let bob_precomputed_key = box_::precompute(&alice_public_key, &bob_secret_key);
         let alice_precomputed_key = box_::precompute(&bob_public_key, &alice_secret_key);
         let bob_encrypted_message = unwrap_result!(pre_computed_serialise(&bob_message,
