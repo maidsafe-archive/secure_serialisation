@@ -50,7 +50,7 @@
 //! between parties using a simpler, although slower, method.
 //!
 //! These functions do not meant to provide non-repudiation. On the
-//! contrary: they  guaranteesrepudiability. A receiver
+//! contrary: they  guarantee repudiability. A receiver
 //! can freely modify a message, and therefore cannot convince third
 //! parties that this particular message came from the sender. The sender
 //! and receiver are nevertheless protected against forgeries by other
