@@ -8,3 +8,4 @@ byteorder = "0.4.2"
 maidsafe_utilities = "0.1.5"
 rustc-serialize = "0.3.16"
 sodiumoxide = "0.0.9"
+clippy = {version = "~0.0.37", optional = true}
