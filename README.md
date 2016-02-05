@@ -2,9 +2,9 @@
 
 [![](https://img.shields.io/badge/Project%20SAFE-Approved-green.svg)](http://maidsafe.net/applications) [![](https://img.shields.io/badge/License-GPL3-green.svg)](https://github.com/maidsafe/secure_serialisation/blob/master/COPYING)
 
-**Primary Maintainer:**     Andrew Cann (andrew.cann@maidsafe.net)
+**Primary Maintainer:**     David Irvine (david.irvine@maidsafe.net)
 
-**Secondary Maintainer:**   Vinícius dos Santos Oliveira (vinipsmaker@maidsafe.net)
+**Secondary Maintainer:**   Fraser Hutchison (fraser.hutchison@maidsafe.net)
 
 |Crate|Linux/OS X|Windows|Coverage|Issues|
 |:---:|:--------:|:-----:|:------:|:----:|
