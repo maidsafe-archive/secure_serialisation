@@ -33,21 +33,21 @@
 //! Alice can reply to Bob using the same system, without having to generate a distinct key pair.
 //! The nonce doesn't have to be confidential, but it should be used with just one invocation of
 //! crypto_box_open_easy() for a particular pair of public and secret keys.
+//!
 //! One easy way to generate a nonce is to use randombytes_buf(), considering the size of nonces
 //! the risk of any random collisions is negligible. For some applications, if you wish to use
 //! nonces to detect missing messages or to ignore replayed messages, it is also ok
 //! to use a simple incrementing counter as a nonce. In this crate we use a random nonce wrapped
 //! into the message.
-//! When doing so you must ensure that the same value can never be re-used
-//! (for example you may have multiple threads or even hosts generating messages using the same key pairs).
-//! This system provides mutual authentication. However, a typical use case is to secure
-//! communications between a server, whose public key is known in advance, and clients connecting anonymously.
 //!
 //! This implementation will encrypt data with a nonce and then serialise the payload. The nonce
 //! is then prepended to the beginning of the message and pulled off first at the remote end.
 //! This provides a clean secure mechanism for sending data between entities who have session
 //! based keypairs. It SHOULD NOT be used for permanent keys.
 //!
+//! Where possible the precompute_* functions will lessen any cpu overhead in sending messages
+//! and should be preferred. This is not enforced to allow occasional sending of messages
+//! between parties using a simpler, although slower, method.
 
 #![doc(html_logo_url =
            "https://raw.githubusercontent.com/maidsafe/QA/master/Images/maidsafe_logo.png",
