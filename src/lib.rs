@@ -90,7 +90,7 @@ extern crate maidsafe_utilities;
 extern crate rustc_serialize;
 
 use sodiumoxide::crypto::box_;
-use sodiumoxide::crypto::box_::{PrecomputedKey, PublicKey, SecretKey};
+pub use sodiumoxide::crypto::box_::{PrecomputedKey, PublicKey, SecretKey, gen_keypair};
 use maidsafe_utilities::serialisation;
 use rustc_serialize::{Decodable, Encodable};
 
