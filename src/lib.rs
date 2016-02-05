@@ -82,6 +82,28 @@ use sodiumoxide::crypto::box_::{PublicKey, SecretKey};
 use maidsafe_utilities::serialisation;
 use rustc_serialize::{Encodable, Decodable};
 
+/// Error types, hopefully sodiumoxide eventually defines errors properly, otherwise this makes
+/// little sense really
+#[derive(Debug)]
+pub enum SecureSerialisationError {
+    /// error form serialisation crate
+    SerialisationError(serialisation::SerialisationError),
+    /// unfortunately sodiumoxide uses () as error types ?
+    CrytpoError,
+}
+
+impl From<serialisation::SerialisationError> for SecureSerialisationError {
+    fn from(orig_error: serialisation::SerialisationError) -> Self {
+        SecureSerialisationError::SerialisationError(orig_error)
+    }
+}
+
+impl From<()> for SecureSerialisationError {
+    fn from(_: ())-> Self {
+        SecureSerialisationError::CrytpoError
+    }
+}
+
 #[derive (RustcEncodable, RustcDecodable)]
 struct Payload {
     ciphertext : Vec<u8>,
@@ -90,7 +112,7 @@ struct Payload {
 
 /// Prepare an ecodable data element for transmission to another process whose public_key we
 /// know.
-pub fn serialise<T>(their_public_key: &PublicKey, our_secret_key : &SecretKey, data: &T)-> Result<Vec<u8>, serialisation::SerialisationError>
+pub fn serialise<T>(their_public_key: &PublicKey, our_secret_key : &SecretKey, data: &T)-> Result<Vec<u8>, SecureSerialisationError>
     where T: Encodable
 {
     let nonce =  box_::gen_nonce();
@@ -107,16 +129,14 @@ pub fn serialise<T>(their_public_key: &PublicKey, our_secret_key : &SecretKey, d
 
 /// Parse a data type from an ecnoded message, sucess ensures teh message was from the holder of the
 /// private_key related to the public_key we know of the recipient
-pub fn deserialise<T>(message: &[u8], their_public_key: &PublicKey, our_secret_key: &SecretKey)-> Result<T, serialisation::SerialisationError>
+pub fn deserialise<T>(message: &[u8], their_public_key: &PublicKey, our_secret_key: &SecretKey)-> Result<T, SecureSerialisationError>
 where T: Decodable
 {
     let payload = try!(serialisation::deserialise::<Payload>(message));
-    let plain_serialised_data = match box_::open(&payload.ciphertext, &payload.nonce, their_public_key, our_secret_key) {
-        Ok(data) => data,
-        Err(_) => return Err(serialisation::SerialisationError::UnsuccessfulDecode)
-        };
+    let plain_serialised_data = try!(box_::open(&payload.ciphertext, &payload.nonce, their_public_key, our_secret_key));
     Ok(try!(serialisation::deserialise(&plain_serialised_data)))
 }
+
 
 #[test]
 fn it_works() {
