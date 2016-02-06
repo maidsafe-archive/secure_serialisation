@@ -81,6 +81,8 @@
 
 #[macro_use]
 extern crate maidsafe_utilities;
+#[cfg(test)]
+extern crate rand;
 extern crate rustc_serialize;
 extern crate sodiumoxide;
 
@@ -191,6 +193,16 @@ pub fn deserialise<T>(message: &[u8],
 #[cfg(test)]
 mod test {
     use super::*;
+    use rand;
+    use rand::distributions::{IndependentSample, Range};
+
+    // Mutate a single byte of the slice
+    fn tamper(bytes: &mut [u8]) {
+        let range = Range::new(0, bytes.len());
+        let mut rng = rand::thread_rng();
+        let index = range.ind_sample(&mut rng);
+        bytes[index] ^= 0x01;
+    }
 
     #[test]
     fn alice_to_bob_message() {
@@ -206,8 +218,31 @@ mod test {
 
         let alice_decrypted_message: (Vec<u8>, Vec<i64>, String) =
             unwrap_result!(deserialise(&bob_encrypted_message, &bob_public_key, &alice_secret_key));
-
         assert_eq!(alice_decrypted_message, bob_message);
+
+        // Tamper with the encrypted message - should fail to deserialise
+        let mut corrupted_message = bob_encrypted_message.clone();
+        tamper(&mut corrupted_message[..]);
+        assert!(deserialise::<(Vec<u8>, Vec<i64>, String)>(&corrupted_message,
+                                                           &bob_public_key,
+                                                           &alice_secret_key)
+                    .is_err());
+
+        // Tamper with the public key - should fail to deserialise
+        let mut corrupted_public_key = bob_public_key.clone();
+        tamper(&mut corrupted_public_key.0);
+        assert!(deserialise::<(Vec<u8>, Vec<i64>, String)>(&bob_encrypted_message,
+                                                           &corrupted_public_key,
+                                                           &alice_secret_key)
+                    .is_err());
+
+        // Tamper with the private key - should fail to deserialise
+        let mut corrupted_secret_key = alice_secret_key.clone();
+        tamper(&mut corrupted_secret_key.0);
+        assert!(deserialise::<(Vec<u8>, Vec<i64>, String)>(&bob_encrypted_message,
+                                                           &bob_public_key,
+                                                           &corrupted_secret_key)
+                    .is_err());
     }
 
     #[test]
@@ -225,7 +260,19 @@ mod test {
         let alice_decrypted_message: (Vec<u8>, Vec<i64>, String) =
             unwrap_result!(pre_computed_deserialise(&bob_encrypted_message,
                                                     &alice_precomputed_key));
-
         assert_eq!(alice_decrypted_message, bob_message);
+
+        // Tamper with the encrypted message - should fail to deserialise
+        let mut corrupted_message = bob_encrypted_message.clone();
+        tamper(&mut corrupted_message[..]);
+        assert!(pre_computed_deserialise::<(Vec<u8>, Vec<i64>, String)>(&corrupted_message,
+                                                                        &alice_precomputed_key)
+                    .is_err());
+
+        // Use wrong key - should fail to deserialise
+        let wrong_key = precompute(&alice_public_key, &alice_secret_key);
+        assert!(pre_computed_deserialise::<(Vec<u8>, Vec<i64>, String)>(&bob_encrypted_message,
+                                                                        &wrong_key)
+                    .is_err());
     }
 }

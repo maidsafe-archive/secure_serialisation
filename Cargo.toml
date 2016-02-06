@@ -14,3 +14,6 @@ clippy = {version = "~0.0.37", optional = true}
 maidsafe_utilities = "~0.1.5"
 rustc-serialize = "~0.3.16"
 sodiumoxide = "~0.0.9"
+
+[dev-dependencies]
+rand = "~0.3.13"
