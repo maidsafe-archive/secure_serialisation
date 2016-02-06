@@ -95,20 +95,20 @@ use rustc_serialize::{Decodable, Encodable};
 /// Hopefully sodiumoxide eventually defines errors properly, otherwise this makes little sense.
 #[allow(missing_docs)]
 #[derive(Debug)]
-pub enum SecureSerialisationError {
+pub enum Error {
     SerialisationError(serialisation::SerialisationError),
     CrytpoError,
 }
 
-impl From<serialisation::SerialisationError> for SecureSerialisationError {
+impl From<serialisation::SerialisationError> for Error {
     fn from(orig_error: serialisation::SerialisationError) -> Self {
-        SecureSerialisationError::SerialisationError(orig_error)
+        Error::SerialisationError(orig_error)
     }
 }
 
-impl From<()> for SecureSerialisationError {
+impl From<()> for Error {
     fn from(_: ()) -> Self {
-        SecureSerialisationError::CrytpoError
+        Error::CrytpoError
     }
 }
 
@@ -128,7 +128,7 @@ pub fn pre_compute(their_public_key: &PublicKey, our_secret_key: &SecretKey) -> 
 /// [`serialise()`](fn.serialise.html) which can be useful if many messages are to be transferred.
 pub fn pre_computed_serialise<T>(data: &T,
                                  pre_computed_key: &PrecomputedKey)
-                                 -> Result<Vec<u8>, SecureSerialisationError>
+                                 -> Result<Vec<u8>, Error>
     where T: Encodable
 {
     let nonce = box_::gen_nonce();
@@ -146,7 +146,7 @@ pub fn pre_computed_serialise<T>(data: &T,
 pub fn serialise<T>(data: &T,
                     their_public_key: &PublicKey,
                     our_secret_key: &SecretKey)
-                    -> Result<Vec<u8>, SecureSerialisationError>
+                    -> Result<Vec<u8>, Error>
     where T: Encodable
 {
     let nonce = box_::gen_nonce();
@@ -165,7 +165,7 @@ pub fn serialise<T>(data: &T,
 /// holder of the private key related to the public key we know of the sender.
 pub fn pre_computed_deserialise<T>(message: &[u8],
                                    pre_computed_key: &PrecomputedKey)
-                                   -> Result<T, SecureSerialisationError>
+                                   -> Result<T, Error>
     where T: Decodable
 {
     let payload = try!(serialisation::deserialise::<Payload>(message));
@@ -181,7 +181,7 @@ pub fn pre_computed_deserialise<T>(message: &[u8],
 pub fn deserialise<T>(message: &[u8],
                       their_public_key: &PublicKey,
                       our_secret_key: &SecretKey)
-                      -> Result<T, SecureSerialisationError>
+                      -> Result<T, Error>
     where T: Decodable
 {
     let payload = try!(serialisation::deserialise::<Payload>(message));
