@@ -84,7 +84,7 @@ extern crate maidsafe_utilities;
 extern crate rustc_serialize;
 extern crate sodiumoxide;
 
-pub use sodiumoxide::crypto::box_::{PrecomputedKey, PublicKey, SecretKey, gen_keypair};
+pub use sodiumoxide::crypto::box_::{PrecomputedKey, PublicKey, SecretKey, gen_keypair, precompute};
 
 use sodiumoxide::crypto::box_;
 use maidsafe_utilities::serialisation;
@@ -118,11 +118,6 @@ struct Payload {
     nonce: box_::Nonce,
 }
 
-/// Pre-compute a key for a session, Allows greater message throughput.
-pub fn pre_compute(their_public_key: &PublicKey, our_secret_key: &SecretKey) -> PrecomputedKey {
-    box_::precompute(their_public_key, our_secret_key)
-}
-
 /// Prepare an encodable data element for transmission to another process whose public key we
 /// know, and which is pre-computed.  This is less CPU-intensive than
 /// [`serialise()`](fn.serialise.html) which can be useful if many messages are to be transferred.
@@ -140,7 +135,6 @@ pub fn pre_computed_serialise<T>(data: &T,
 
     Ok(try!(serialisation::serialise(&full_payload)))
 }
-
 
 /// Prepare an encodable data element for transmission to another process whose public key we know.
 pub fn serialise<T>(data: &T,
@@ -197,7 +191,6 @@ pub fn deserialise<T>(message: &[u8],
 #[cfg(test)]
 mod test {
     use super::*;
-    use sodiumoxide::crypto::box_;
 
     #[test]
     fn alice_to_bob_message() {
@@ -224,8 +217,8 @@ mod test {
                            "Message from Bob for Alice, very secret".to_owned());
         let (alice_public_key, alice_secret_key) = gen_keypair();
         let (bob_public_key, bob_secret_key) = gen_keypair();
-        let bob_precomputed_key = box_::precompute(&alice_public_key, &bob_secret_key);
-        let alice_precomputed_key = box_::precompute(&bob_public_key, &alice_secret_key);
+        let bob_precomputed_key = precompute(&alice_public_key, &bob_secret_key);
+        let alice_precomputed_key = precompute(&bob_public_key, &alice_secret_key);
         let bob_encrypted_message = unwrap_result!(pre_computed_serialise(&bob_message,
                                                                           &bob_precomputed_key));
 
