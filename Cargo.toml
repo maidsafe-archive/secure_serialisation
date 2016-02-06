@@ -1,11 +1,16 @@
 [package]
-authors = ["David Irvine <david.irvine@maidsafe.net>"]
+authors = ["MaidSafe Developers <dev@maidsafe.net>"]
+description = "Functions to encode/decode and encrypt/decrypt data using public-key, authenticated encryption."
+documentation = "http://maidsafe.net/secure_serialisation/latest"
+homepage = "http://maidsafe.net"
+license = "GPL-3.0"
 name = "secure_serialisation"
+readme = "README.md"
+repository = "https://github.com/maidsafe/secure_serialisation"
 version = "0.1.0"
 
 [dependencies]
-byteorder = "0.4.2"
-maidsafe_utilities = "0.1.5"
-rustc-serialize = "0.3.16"
-sodiumoxide = "0.0.9"
 clippy = {version = "~0.0.37", optional = true}
+maidsafe_utilities = "~0.1.5"
+rustc-serialize = "~0.3.16"
+sodiumoxide = "~0.0.9"
