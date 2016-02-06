@@ -46,7 +46,7 @@
             <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
                 [<span class='inner'>&#x2212;</span>]
             </a>
-        </span><a id='src-0' class='srclink' href='../src/secure_serialisation/lib.rs.html#18-143' title='goto source code'>[src]</a></span></h1>
+        </span><a id='src-0' class='srclink' href='../src/secure_serialisation/lib.rs.html#18-241' title='goto source code'>[src]</a></span></h1>
 <div class='docblock'>
 <h1 id='secure-serialisation' class='section-header'><a href='#secure-serialisation'>Secure Serialisation</a></h1>
 <p>Given a remote nacl box PublicKey this lib will securely serialise and
@@ -64,22 +64,64 @@ And in order to send messages to Alice, Bob only needs Alice&#39;s public key. A
 ever share her secret key either, even with Bob.
 Alice can reply to Bob using the same system, without having to generate a distinct key pair.
 The nonce doesn&#39;t have to be confidential, but it should be used with just one invocation of
-crypto_box_open_easy() for a particular pair of public and secret keys.
-One easy way to generate a nonce is to use randombytes_buf(), considering the size of nonces
+crypto_box_open_easy() for a particular pair of public and secret keys.</p>
+
+<p>One easy way to generate a nonce is to use randombytes_buf(), considering the size of nonces
 the risk of any random collisions is negligible. For some applications, if you wish to use
 nonces to detect missing messages or to ignore replayed messages, it is also ok
 to use a simple incrementing counter as a nonce. In this crate we use a random nonce wrapped
-into the message.
-When doing so you must ensure that the same value can never be re-used
-(for example you may have multiple threads or even hosts generating messages using the same key pairs).
-This system provides mutual authentication. However, a typical use case is to secure
-communications between a server, whose public key is known in advance, and clients connecting anonymously.</p>
+into the message.</p>
 
 <p>This implementation will encrypt data with a nonce and then serialise the payload. The nonce
 is then prepended to the beginning of the message and pulled off first at the remote end.
-Thsi provides a clean secure mechnism fro sending data between entities who have session
-based keypairs. It SHOULD NOT be used for permenent keys.</p>
-</div><h2 id='enums' class='section-header'><a href="#enums">Enums</a></h2>
+This provides a clean secure mechanism for sending data between entities who have session
+based keypairs. It SHOULD NOT be used for permanent keys.</p>
+
+<p>Where possible the precompute_* functions will lessen any cpu overhead in sending messages
+and should be preferred. This is not enforced to allow occasional sending of messages
+between parties using a simpler, although slower, method.</p>
+
+<p>These functions do not meant to provide non-repudiation. On the
+contrary: they  guarantee repudiability. A receiver
+can freely modify a message, and therefore cannot convince third
+parties that this particular message came from the sender. The sender
+and receiver are nevertheless protected against forgeries by other
+parties. In the terminology of
+<a href="http://groups.google.com/group/sci.crypt/msg/ec5c18b23b11d82c">http://groups.google.com/group/sci.crypt/msg/ec5c18b23b11d82c</a>,
+this crate uses &quot;public-key authenticators&quot; rather than &quot;public-key
+signatures.&quot;</p>
+</div><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
+<table>
+                    <tr class=' module-item'>
+                        <td><a class='struct' href='struct.PrecomputedKey.html'
+                               title='secure_serialisation::PrecomputedKey'>PrecomputedKey</a></td>
+                        <td class='docblock short'>
+                             <p>Applications that send several messages to the same receiver can gain speed by
+splitting <code>seal()</code> into two steps, <code>precompute()</code> and <code>seal_precomputed()</code>.
+Similarly, applications that receive several messages from the same sender can gain
+speed by splitting <code>open()</code> into two steps, <code>precompute()</code> and <code>open_precomputed()</code>.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='struct' href='struct.PublicKey.html'
+                               title='secure_serialisation::PublicKey'>PublicKey</a></td>
+                        <td class='docblock short'>
+                             <p><code>PublicKey</code> for asymmetric authenticated encryption</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='struct' href='struct.SecretKey.html'
+                               title='secure_serialisation::SecretKey'>SecretKey</a></td>
+                        <td class='docblock short'>
+                             <p><code>SecretKey</code> for asymmetric authenticated encryption</p>
+
+                        </td>
+                    </tr>
+                </table><h2 id='enums' class='section-header'><a href="#enums">Enums</a></h2>
 <table>
                     <tr class=' module-item'>
                         <td><a class='enum' href='enum.SecureSerialisationError.html'
@@ -96,8 +138,48 @@ little sense really</p>
                         <td><a class='fn' href='fn.deserialise.html'
                                title='secure_serialisation::deserialise'>deserialise</a></td>
                         <td class='docblock short'>
-                             <p>Parse a data type from an ecnoded message, sucess ensures teh message was from the holder of the
+                             <p>Parse a data type from an encoded message, success ensures the message was from the holder of the
 private_key related to the public_key we know of the recipient</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='fn' href='fn.gen_keypair.html'
+                               title='secure_serialisation::gen_keypair'>gen_keypair</a></td>
+                        <td class='docblock short'>
+                             <p><code>gen_keypair()</code> randomly generates a secret key and a corresponding public key.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='fn' href='fn.pre_compute.html'
+                               title='secure_serialisation::pre_compute'>pre_compute</a></td>
+                        <td class='docblock short'>
+                             <p>Pre-compute a key for a session, Allows greater message throughput.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='fn' href='fn.pre_computed_deserialise.html'
+                               title='secure_serialisation::pre_computed_deserialise'>pre_computed_deserialise</a></td>
+                        <td class='docblock short'>
+                             <p>Pre computed key version (less cpu intensive if many messages are transferred)
+Parse a data type from an encoded message, success ensures the message was from the holder of the
+private_key related to the public_key we know of the recipient</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='fn' href='fn.pre_computed_serialise.html'
+                               title='secure_serialisation::pre_computed_serialise'>pre_computed_serialise</a></td>
+                        <td class='docblock short'>
+                             <p>Pre computed key version (less cpu intensive if many messages are transferred)
+Prepare an encodable data element for transmission to another process whose public_key we
+know.</p>
 
                         </td>
                     </tr>
@@ -106,7 +188,7 @@ private_key related to the public_key we know of the recipient</p>
                         <td><a class='fn' href='fn.serialise.html'
                                title='secure_serialisation::serialise'>serialise</a></td>
                         <td class='docblock short'>
-                             <p>Prepare an ecodable data element for transmission to another process whose public_key we
+                             <p>Prepare an encodable data element for transmission to another process whose public_key we
 know.</p>
 
                         </td>
