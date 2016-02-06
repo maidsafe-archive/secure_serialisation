@@ -86,7 +86,7 @@ extern crate sodiumoxide;
 
 pub use sodiumoxide::crypto::box_::{PrecomputedKey, PublicKey, SecretKey, gen_keypair, precompute};
 
-use sodiumoxide::crypto::box_;
+use sodiumoxide::crypto::box_::{self, Nonce};
 use maidsafe_utilities::serialisation;
 use rustc_serialize::{Decodable, Encodable};
 
@@ -97,7 +97,7 @@ use rustc_serialize::{Decodable, Encodable};
 #[derive(Debug)]
 pub enum Error {
     SerialisationError(serialisation::SerialisationError),
-    CrytpoError,
+    CryptoError,
 }
 
 impl From<serialisation::SerialisationError> for Error {
@@ -108,14 +108,14 @@ impl From<serialisation::SerialisationError> for Error {
 
 impl From<()> for Error {
     fn from(_: ()) -> Self {
-        Error::CrytpoError
+        Error::CryptoError
     }
 }
 
 #[derive(RustcEncodable, RustcDecodable)]
 struct Payload {
     ciphertext: Vec<u8>,
-    nonce: box_::Nonce,
+    nonce: Nonce,
 }
 
 /// Prepare an encodable data element for transmission to another process whose public key we
