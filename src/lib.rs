@@ -139,20 +139,18 @@ pub fn pre_computed_serialise<T>(data: &T,
 }
 
 /// Prepare an encodable data element for transmission to another process whose public key we know.
-pub fn serialise<T>(data: &T,
-                    their_public_key: &PublicKey,
-                    our_secret_key: &SecretKey)
-                    -> Result<Vec<u8>, Error>
+pub fn serialise<T>(data: &T, their_public_key: &PublicKey) -> Result<Vec<u8>, Error>
     where T: Encodable
 {
     let nonce = box_::gen_nonce();
     let serialised_data = try!(serialisation::serialise(data));
+    let (public_key, secret_key) = gen_keypair();
     let full_payload = Payload {
-        ciphertext: box_::seal(&serialised_data, &nonce, their_public_key, our_secret_key),
+        ciphertext: box_::seal(&serialised_data, &nonce, their_public_key, &secret_key),
         nonce: nonce,
     };
 
-    Ok(try!(serialisation::serialise(&full_payload)))
+    Ok(try!(serialisation::serialise(&(&public_key, &full_payload))))
 }
 
 /// Parse a data type from an encoded message from a sender whose public key we know, and which is
@@ -174,16 +172,13 @@ pub fn pre_computed_deserialise<T>(message: &[u8],
 /// Parse a data type from an encoded message from a sender whose public key we know.  Success
 /// ensures the message was from the holder of the private key related to the public key we know of
 /// the sender.
-pub fn deserialise<T>(message: &[u8],
-                      their_public_key: &PublicKey,
-                      our_secret_key: &SecretKey)
-                      -> Result<T, Error>
+pub fn deserialise<T>(message: &[u8], our_secret_key: &SecretKey) -> Result<T, Error>
     where T: Decodable
 {
-    let payload = try!(serialisation::deserialise::<Payload>(message));
+    let (public_key, payload) = try!(serialisation::deserialise::<([u8; box_::PUBLICKEYBYTES], Payload)>(message));
     let plain_serialised_data = try!(box_::open(&payload.ciphertext,
                                                 &payload.nonce,
-                                                their_public_key,
+                                                &PublicKey(public_key),
                                                 our_secret_key));
     Ok(try!(serialisation::deserialise(&plain_serialised_data)))
 }
@@ -210,29 +205,17 @@ mod test {
                            vec![-1i64, 888, -8765],
                            "Message from Bob for Alice, very secret".to_owned());
         let (alice_public_key, alice_secret_key) = gen_keypair();
-        let (bob_public_key, bob_secret_key) = gen_keypair();
 
-        let bob_encrypted_message = unwrap_result!(serialise(&bob_message,
-                                                             &alice_public_key,
-                                                             &bob_secret_key));
+        let bob_encrypted_message = unwrap_result!(serialise(&bob_message, &alice_public_key));
 
         let alice_decrypted_message: (Vec<u8>, Vec<i64>, String) =
-            unwrap_result!(deserialise(&bob_encrypted_message, &bob_public_key, &alice_secret_key));
+            unwrap_result!(deserialise(&bob_encrypted_message, &alice_secret_key));
         assert_eq!(alice_decrypted_message, bob_message);
 
         // Tamper with the encrypted message - should fail to deserialise
         let mut corrupted_message = bob_encrypted_message.clone();
         tamper(&mut corrupted_message[..]);
         assert!(deserialise::<(Vec<u8>, Vec<i64>, String)>(&corrupted_message,
-                                                           &bob_public_key,
-                                                           &alice_secret_key)
-                    .is_err());
-
-        // Tamper with the public key - should fail to deserialise
-        let mut corrupted_public_key = bob_public_key.clone();
-        tamper(&mut corrupted_public_key.0);
-        assert!(deserialise::<(Vec<u8>, Vec<i64>, String)>(&bob_encrypted_message,
-                                                           &corrupted_public_key,
                                                            &alice_secret_key)
                     .is_err());
 
@@ -240,7 +223,6 @@ mod test {
         let mut corrupted_secret_key = alice_secret_key.clone();
         tamper(&mut corrupted_secret_key.0);
         assert!(deserialise::<(Vec<u8>, Vec<i64>, String)>(&bob_encrypted_message,
-                                                           &bob_public_key,
                                                            &corrupted_secret_key)
                     .is_err());
     }
