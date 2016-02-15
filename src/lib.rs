@@ -49,12 +49,23 @@
 //! should be preferred.  This is not enforced to allow occasional sending of messages between
 //! parties using a simpler, although slower, method.
 //!
-//! These functions are not meant to provide non-repudiation.  On the contrary: they  guarantee
+//! These functions are not meant to provide non-repudiation.  On the contrary: they guarantee
 //! repudiability.  A receiver can freely modify a message, and therefore cannot convince third
 //! parties that this particular message came from the sender.  The sender and receiver are
 //! nevertheless protected against forgeries by other parties.  In the terminology of
 //! http://groups.google.com/group/sci.crypt/msg/ec5c18b23b11d82c, this crate uses "public-key
 //! authenticators" rather than "public-key signatures."
+//!
+//! # Anonymous encryption
+//! Sealed boxes are designed to anonymously send messages to a recipient given its public key.
+//!
+//! Only the recipient can decrypt these messages, using its private key.  While the recipient can verify
+//! the integrity of the message, it cannot verify the identity of the sender.  A message is encrypted
+//! using an ephemeral key pair, whose secret part is destroyed right after the encryption process.
+//! Without knowing the secret key used for a given message, the sender cannot decrypt its own message
+//! later.  And without additional data, a message cannot be correlated with the identity of its sender.
+
+
 
 #![doc(html_logo_url =
            "https://raw.githubusercontent.com/maidsafe/QA/master/Images/maidsafe_logo.png",
@@ -188,6 +199,35 @@ pub fn deserialise<T>(message: &[u8],
     Ok(try!(serialisation::deserialise(&plain_serialised_data)))
 }
 
+/// Prepare an encodable data element for transmission to another process, whose public key we know, that does not
+/// know our public key.
+pub fn anonymous_serialise<T>(data: &T, their_public_key: &PublicKey) -> Result<Vec<u8>, Error>
+    where T: Encodable
+{
+    let nonce = box_::gen_nonce();
+    let serialised_data = try!(serialisation::serialise(data));
+    let (public_key, secret_key) = gen_keypair();
+    let full_payload = Payload {
+        ciphertext: box_::seal(&serialised_data, &nonce, their_public_key, &secret_key),
+        nonce: nonce,
+    };
+
+    Ok(try!(serialisation::serialise(&(&public_key, &full_payload))))
+}
+
+/// Parse a tuple data type from an encoded message from a sender whose public key we do not know.  Success
+/// does not provide any guarantee of correlation between the expected and actual identity of the message sender.
+pub fn anonymous_deserialise<T>(message: &[u8], our_secret_key: &SecretKey) -> Result<T, Error>
+    where T: Decodable
+{
+    let (public_key, payload) = try!(serialisation::deserialise::<([u8; box_::PUBLICKEYBYTES], Payload)>(message));
+    let plain_serialised_data = try!(box_::open(&payload.ciphertext,
+                                                &payload.nonce,
+                                                &PublicKey(public_key),
+                                                our_secret_key));
+    Ok(try!(serialisation::deserialise(&plain_serialised_data)))
+}
+
 
 
 #[cfg(test)]
@@ -273,6 +313,34 @@ mod test {
         let wrong_key = precompute(&alice_public_key, &alice_secret_key);
         assert!(pre_computed_deserialise::<(Vec<u8>, Vec<i64>, String)>(&bob_encrypted_message,
                                                                         &wrong_key)
+                    .is_err());
+    }
+
+    #[test]
+    fn anonymous_alice_to_bob_message() {
+        let bob_message = (vec![0u8, 1, 3, 9],
+                           vec![-1i64, 888, -8765],
+                           "Message from Bob for Alice, very secret".to_owned());
+        let (alice_public_key, alice_secret_key) = gen_keypair();
+
+        let bob_encrypted_message = unwrap_result!(anonymous_serialise(&bob_message, &alice_public_key));
+
+        let alice_decrypted_message: (Vec<u8>, Vec<i64>, String) =
+            unwrap_result!(anonymous_deserialise(&bob_encrypted_message, &alice_secret_key));
+        assert_eq!(alice_decrypted_message, bob_message);
+
+        // Tamper with the encrypted message - should fail to deserialise
+        let mut corrupted_message = bob_encrypted_message.clone();
+        tamper(&mut corrupted_message[..]);
+        assert!(anonymous_deserialise::<(Vec<u8>, Vec<i64>, String)>(&corrupted_message,
+                                                                     &alice_secret_key)
+                    .is_err());
+
+        // Tamper with the private key - should fail to deserialise
+        let mut corrupted_secret_key = alice_secret_key.clone();
+        tamper(&mut corrupted_secret_key.0);
+        assert!(anonymous_deserialise::<(Vec<u8>, Vec<i64>, String)>(&bob_encrypted_message,
+                                                                     &corrupted_secret_key)
                     .is_err());
     }
 }
