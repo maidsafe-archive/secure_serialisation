@@ -46,7 +46,7 @@
             <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
                 [<span class='inner'>&#x2212;</span>]
             </a>
-        </span><a id='src-0' class='srclink' href='../src/secure_serialisation/lib.rs.html#18-346' title='goto source code'>[src]</a></span></h1>
+        </span><a id='src-0' class='srclink' href='../src/secure_serialisation/lib.rs.html#18-335' title='goto source code'>[src]</a></span></h1>
 <div class='docblock'>
 <h1 id='secure-serialisation' class='section-header'><a href='#secure-serialisation'>Secure Serialisation</a></h1>
 <p>Given a remote nacl box PublicKey this lib will securely serialise and encrypt messages destined
@@ -91,11 +91,12 @@ authenticators&quot; rather than &quot;public-key signatures.&quot;</p>
 <h1 id='anonymous-encryption' class='section-header'><a href='#anonymous-encryption'>Anonymous encryption</a></h1>
 <p>Sealed boxes are designed to anonymously send messages to a recipient given its public key.</p>
 
-<p>Only the recipient can decrypt these messages, using its private key.  While the recipient can verify
-the integrity of the message, it cannot verify the identity of the sender.  A message is encrypted
-using an ephemeral key pair, whose secret part is destroyed right after the encryption process.
-Without knowing the secret key used for a given message, the sender cannot decrypt its own message
-later.  And without additional data, a message cannot be correlated with the identity of its sender.</p>
+<p>Only the recipient can decrypt these messages, using its private key.  While the recipient can
+verify the integrity of the message, it cannot verify the identity of the sender.  A message is
+encrypted using an ephemeral key pair, whose secret part is destroyed right after the encryption
+process.  Without knowing the secret key used for a given message, the sender cannot decrypt its
+own message later.  And without additional data, a message cannot be correlated with the
+identity of its sender.</p>
 </div><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
 <table>
                     <tr class=' module-item'>
@@ -143,8 +144,9 @@ speed by splitting <code>open()</code> into two steps, <code>precompute()</code>
                         <td><a class='fn' href='fn.anonymous_deserialise.html'
                                title='secure_serialisation::anonymous_deserialise'>anonymous_deserialise</a></td>
                         <td class='docblock short'>
-                             <p>Parse a tuple data type from an encoded message from a sender whose public key we do not know.  Success
-does not provide any guarantee of correlation between the expected and actual identity of the message sender.</p>
+                             <p>Parse a tuple data type from an encoded message from a sender whose public key we do not know.
+Success does not provide any guarantee of correlation between the expected and actual identity
+of the message sender.</p>
 
                         </td>
                     </tr>
@@ -153,8 +155,8 @@ does not provide any guarantee of correlation between the expected and actual id
                         <td><a class='fn' href='fn.anonymous_serialise.html'
                                title='secure_serialisation::anonymous_serialise'>anonymous_serialise</a></td>
                         <td class='docblock short'>
-                             <p>Prepare an encodable data element for transmission to another process, whose public key we know, that does not
-know our public key.</p>
+                             <p>Prepare an encodable data element for transmission to another process, whose public key we know,
+that does not know our public key.</p>
 
                         </td>
                     </tr>

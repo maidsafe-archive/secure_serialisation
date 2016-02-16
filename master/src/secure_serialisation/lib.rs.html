@@ -376,17 +376,6 @@
 <span id="333">333</span>
 <span id="334">334</span>
 <span id="335">335</span>
-<span id="336">336</span>
-<span id="337">337</span>
-<span id="338">338</span>
-<span id="339">339</span>
-<span id="340">340</span>
-<span id="341">341</span>
-<span id="342">342</span>
-<span id="343">343</span>
-<span id="344">344</span>
-<span id="345">345</span>
-<span id="346">346</span>
 </pre><pre class='rust '>
 <span class='comment'>// Copyright 2016 MaidSafe.net limited.</span>
 <span class='comment'>//</span>
@@ -449,13 +438,12 @@
 <span class='doccomment'>//! # Anonymous encryption</span>
 <span class='doccomment'>//! Sealed boxes are designed to anonymously send messages to a recipient given its public key.</span>
 <span class='doccomment'>//!</span>
-<span class='doccomment'>//! Only the recipient can decrypt these messages, using its private key.  While the recipient can verify</span>
-<span class='doccomment'>//! the integrity of the message, it cannot verify the identity of the sender.  A message is encrypted</span>
-<span class='doccomment'>//! using an ephemeral key pair, whose secret part is destroyed right after the encryption process.</span>
-<span class='doccomment'>//! Without knowing the secret key used for a given message, the sender cannot decrypt its own message</span>
-<span class='doccomment'>//! later.  And without additional data, a message cannot be correlated with the identity of its sender.</span>
-
-
+<span class='doccomment'>//! Only the recipient can decrypt these messages, using its private key.  While the recipient can</span>
+<span class='doccomment'>//! verify the integrity of the message, it cannot verify the identity of the sender.  A message is</span>
+<span class='doccomment'>//! encrypted using an ephemeral key pair, whose secret part is destroyed right after the encryption</span>
+<span class='doccomment'>//! process.  Without knowing the secret key used for a given message, the sender cannot decrypt its</span>
+<span class='doccomment'>//! own message later.  And without additional data, a message cannot be correlated with the</span>
+<span class='doccomment'>//! identity of its sender.</span>
 
 <span class='attribute'>#<span class='op'>!</span>[<span class='ident'>doc</span>(<span class='ident'>html_logo_url</span> <span class='op'>=</span>
            <span class='string'>&quot;https://raw.githubusercontent.com/maidsafe/QA/master/Images/maidsafe_logo.png&quot;</span>,
@@ -499,19 +487,19 @@
 <span class='attribute'>#[<span class='ident'>allow</span>(<span class='ident'>missing_docs</span>)]</span>
 <span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Debug</span>)]</span>
 <span class='kw'>pub</span> <span class='kw'>enum</span> <span class='ident'>Error</span> {
-    <span class='ident'>SerialisationError</span>(<span class='ident'>serialisation</span>::<span class='ident'>SerialisationError</span>),
-    <span class='ident'>CryptoError</span>,
+    <span class='ident'>Serialisation</span>(<span class='ident'>serialisation</span>::<span class='ident'>SerialisationError</span>),
+    <span class='ident'>Crypto</span>,
 }
 
 <span class='kw'>impl</span> <span class='ident'>From</span><span class='op'>&lt;</span><span class='ident'>serialisation</span>::<span class='ident'>SerialisationError</span><span class='op'>&gt;</span> <span class='kw'>for</span> <span class='ident'>Error</span> {
     <span class='kw'>fn</span> <span class='ident'>from</span>(<span class='ident'>orig_error</span>: <span class='ident'>serialisation</span>::<span class='ident'>SerialisationError</span>) <span class='op'>-&gt;</span> <span class='kw'>Self</span> {
-        <span class='ident'>Error</span>::<span class='ident'>SerialisationError</span>(<span class='ident'>orig_error</span>)
+        <span class='ident'>Error</span>::<span class='ident'>Serialisation</span>(<span class='ident'>orig_error</span>)
     }
 }
 
 <span class='kw'>impl</span> <span class='ident'>From</span><span class='op'>&lt;</span>()<span class='op'>&gt;</span> <span class='kw'>for</span> <span class='ident'>Error</span> {
     <span class='kw'>fn</span> <span class='ident'>from</span>(_: ()) <span class='op'>-&gt;</span> <span class='kw'>Self</span> {
-        <span class='ident'>Error</span>::<span class='ident'>CryptoError</span>
+        <span class='ident'>Error</span>::<span class='ident'>Crypto</span>
     }
 }
 
@@ -524,11 +512,9 @@
 <span class='doccomment'>/// Prepare an encodable data element for transmission to another process whose public key we</span>
 <span class='doccomment'>/// know, and which is pre-computed.  This is less CPU-intensive than</span>
 <span class='doccomment'>/// [`serialise()`](fn.serialise.html) which can be useful if many messages are to be transferred.</span>
-<span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>pre_computed_serialise</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span>(<span class='ident'>data</span>: <span class='kw-2'>&amp;</span><span class='ident'>T</span>,
-                                 <span class='ident'>pre_computed_key</span>: <span class='kw-2'>&amp;</span><span class='ident'>PrecomputedKey</span>)
-                                 <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>u8</span><span class='op'>&gt;</span>, <span class='ident'>Error</span><span class='op'>&gt;</span>
-    <span class='kw'>where</span> <span class='ident'>T</span>: <span class='ident'>Encodable</span>
-{
+<span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>pre_computed_serialise</span><span class='op'>&lt;</span><span class='ident'>T</span>: <span class='ident'>Encodable</span><span class='op'>&gt;</span>(<span class='ident'>data</span>: <span class='kw-2'>&amp;</span><span class='ident'>T</span>,
+                                            <span class='ident'>pre_computed_key</span>: <span class='kw-2'>&amp;</span><span class='ident'>PrecomputedKey</span>)
+                                            <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>u8</span><span class='op'>&gt;</span>, <span class='ident'>Error</span><span class='op'>&gt;</span> {
     <span class='kw'>let</span> <span class='ident'>nonce</span> <span class='op'>=</span> <span class='ident'>box_</span>::<span class='ident'>gen_nonce</span>();
     <span class='kw'>let</span> <span class='ident'>serialised_data</span> <span class='op'>=</span> <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>serialisation</span>::<span class='ident'>serialise</span>(<span class='ident'>data</span>));
     <span class='kw'>let</span> <span class='ident'>full_payload</span> <span class='op'>=</span> <span class='ident'>Payload</span> {
@@ -540,12 +526,10 @@
 }
 
 <span class='doccomment'>/// Prepare an encodable data element for transmission to another process whose public key we know.</span>
-<span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>serialise</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span>(<span class='ident'>data</span>: <span class='kw-2'>&amp;</span><span class='ident'>T</span>,
-                    <span class='ident'>their_public_key</span>: <span class='kw-2'>&amp;</span><span class='ident'>PublicKey</span>,
-                    <span class='ident'>our_secret_key</span>: <span class='kw-2'>&amp;</span><span class='ident'>SecretKey</span>)
-                    <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>u8</span><span class='op'>&gt;</span>, <span class='ident'>Error</span><span class='op'>&gt;</span>
-    <span class='kw'>where</span> <span class='ident'>T</span>: <span class='ident'>Encodable</span>
-{
+<span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>serialise</span><span class='op'>&lt;</span><span class='ident'>T</span>: <span class='ident'>Encodable</span><span class='op'>&gt;</span>(<span class='ident'>data</span>: <span class='kw-2'>&amp;</span><span class='ident'>T</span>,
+                               <span class='ident'>their_public_key</span>: <span class='kw-2'>&amp;</span><span class='ident'>PublicKey</span>,
+                               <span class='ident'>our_secret_key</span>: <span class='kw-2'>&amp;</span><span class='ident'>SecretKey</span>)
+                               <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>u8</span><span class='op'>&gt;</span>, <span class='ident'>Error</span><span class='op'>&gt;</span> {
     <span class='kw'>let</span> <span class='ident'>nonce</span> <span class='op'>=</span> <span class='ident'>box_</span>::<span class='ident'>gen_nonce</span>();
     <span class='kw'>let</span> <span class='ident'>serialised_data</span> <span class='op'>=</span> <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>serialisation</span>::<span class='ident'>serialise</span>(<span class='ident'>data</span>));
     <span class='kw'>let</span> <span class='ident'>full_payload</span> <span class='op'>=</span> <span class='ident'>Payload</span> {
@@ -560,11 +544,9 @@
 <span class='doccomment'>/// pre-computed.  This is less CPU-intensive than [`deserialise()`](fn.deserialise.html) which can</span>
 <span class='doccomment'>/// be useful if many messages are to be transferred.  Success ensures the message was from the</span>
 <span class='doccomment'>/// holder of the private key related to the public key we know of the sender.</span>
-<span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>pre_computed_deserialise</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span>(<span class='ident'>message</span>: <span class='kw-2'>&amp;</span>[<span class='ident'>u8</span>],
-                                   <span class='ident'>pre_computed_key</span>: <span class='kw-2'>&amp;</span><span class='ident'>PrecomputedKey</span>)
-                                   <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>Error</span><span class='op'>&gt;</span>
-    <span class='kw'>where</span> <span class='ident'>T</span>: <span class='ident'>Decodable</span>
-{
+<span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>pre_computed_deserialise</span><span class='op'>&lt;</span><span class='ident'>T</span>: <span class='ident'>Decodable</span><span class='op'>&gt;</span>(<span class='ident'>message</span>: <span class='kw-2'>&amp;</span>[<span class='ident'>u8</span>],
+                                              <span class='ident'>pre_computed_key</span>: <span class='kw-2'>&amp;</span><span class='ident'>PrecomputedKey</span>)
+                                              <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>Error</span><span class='op'>&gt;</span> {
     <span class='kw'>let</span> <span class='ident'>payload</span> <span class='op'>=</span> <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>serialisation</span>::<span class='ident'>deserialise</span>::<span class='op'>&lt;</span><span class='ident'>Payload</span><span class='op'>&gt;</span>(<span class='ident'>message</span>));
     <span class='kw'>let</span> <span class='ident'>plain_serialised_data</span> <span class='op'>=</span> <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>box_</span>::<span class='ident'>open_precomputed</span>(<span class='kw-2'>&amp;</span><span class='ident'>payload</span>.<span class='ident'>ciphertext</span>,
                                                             <span class='kw-2'>&amp;</span><span class='ident'>payload</span>.<span class='ident'>nonce</span>,
@@ -575,12 +557,10 @@
 <span class='doccomment'>/// Parse a data type from an encoded message from a sender whose public key we know.  Success</span>
 <span class='doccomment'>/// ensures the message was from the holder of the private key related to the public key we know of</span>
 <span class='doccomment'>/// the sender.</span>
-<span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>deserialise</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span>(<span class='ident'>message</span>: <span class='kw-2'>&amp;</span>[<span class='ident'>u8</span>],
-                      <span class='ident'>their_public_key</span>: <span class='kw-2'>&amp;</span><span class='ident'>PublicKey</span>,
-                      <span class='ident'>our_secret_key</span>: <span class='kw-2'>&amp;</span><span class='ident'>SecretKey</span>)
-                      <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>Error</span><span class='op'>&gt;</span>
-    <span class='kw'>where</span> <span class='ident'>T</span>: <span class='ident'>Decodable</span>
-{
+<span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>deserialise</span><span class='op'>&lt;</span><span class='ident'>T</span>: <span class='ident'>Decodable</span><span class='op'>&gt;</span>(<span class='ident'>message</span>: <span class='kw-2'>&amp;</span>[<span class='ident'>u8</span>],
+                                 <span class='ident'>their_public_key</span>: <span class='kw-2'>&amp;</span><span class='ident'>PublicKey</span>,
+                                 <span class='ident'>our_secret_key</span>: <span class='kw-2'>&amp;</span><span class='ident'>SecretKey</span>)
+                                 <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>Error</span><span class='op'>&gt;</span> {
     <span class='kw'>let</span> <span class='ident'>payload</span> <span class='op'>=</span> <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>serialisation</span>::<span class='ident'>deserialise</span>::<span class='op'>&lt;</span><span class='ident'>Payload</span><span class='op'>&gt;</span>(<span class='ident'>message</span>));
     <span class='kw'>let</span> <span class='ident'>plain_serialised_data</span> <span class='op'>=</span> <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>box_</span>::<span class='ident'>open</span>(<span class='kw-2'>&amp;</span><span class='ident'>payload</span>.<span class='ident'>ciphertext</span>,
                                                 <span class='kw-2'>&amp;</span><span class='ident'>payload</span>.<span class='ident'>nonce</span>,
@@ -589,11 +569,11 @@
     <span class='prelude-val'>Ok</span>(<span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>serialisation</span>::<span class='ident'>deserialise</span>(<span class='kw-2'>&amp;</span><span class='ident'>plain_serialised_data</span>)))
 }
 
-<span class='doccomment'>/// Prepare an encodable data element for transmission to another process, whose public key we know, that does not</span>
-<span class='doccomment'>/// know our public key.</span>
-<span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>anonymous_serialise</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span>(<span class='ident'>data</span>: <span class='kw-2'>&amp;</span><span class='ident'>T</span>, <span class='ident'>their_public_key</span>: <span class='kw-2'>&amp;</span><span class='ident'>PublicKey</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>u8</span><span class='op'>&gt;</span>, <span class='ident'>Error</span><span class='op'>&gt;</span>
-    <span class='kw'>where</span> <span class='ident'>T</span>: <span class='ident'>Encodable</span>
-{
+<span class='doccomment'>/// Prepare an encodable data element for transmission to another process, whose public key we know,</span>
+<span class='doccomment'>/// that does not know our public key.</span>
+<span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>anonymous_serialise</span><span class='op'>&lt;</span><span class='ident'>T</span>: <span class='ident'>Encodable</span><span class='op'>&gt;</span>(<span class='ident'>data</span>: <span class='kw-2'>&amp;</span><span class='ident'>T</span>,
+                                         <span class='ident'>their_public_key</span>: <span class='kw-2'>&amp;</span><span class='ident'>PublicKey</span>)
+                                         <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>u8</span><span class='op'>&gt;</span>, <span class='ident'>Error</span><span class='op'>&gt;</span> {
     <span class='kw'>let</span> <span class='ident'>nonce</span> <span class='op'>=</span> <span class='ident'>box_</span>::<span class='ident'>gen_nonce</span>();
     <span class='kw'>let</span> <span class='ident'>serialised_data</span> <span class='op'>=</span> <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>serialisation</span>::<span class='ident'>serialise</span>(<span class='ident'>data</span>));
     <span class='kw'>let</span> (<span class='ident'>public_key</span>, <span class='ident'>secret_key</span>) <span class='op'>=</span> <span class='ident'>gen_keypair</span>();
@@ -605,12 +585,14 @@
     <span class='prelude-val'>Ok</span>(<span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>serialisation</span>::<span class='ident'>serialise</span>(<span class='kw-2'>&amp;</span>(<span class='kw-2'>&amp;</span><span class='ident'>public_key</span>, <span class='kw-2'>&amp;</span><span class='ident'>full_payload</span>))))
 }
 
-<span class='doccomment'>/// Parse a tuple data type from an encoded message from a sender whose public key we do not know.  Success</span>
-<span class='doccomment'>/// does not provide any guarantee of correlation between the expected and actual identity of the message sender.</span>
-<span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>anonymous_deserialise</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span>(<span class='ident'>message</span>: <span class='kw-2'>&amp;</span>[<span class='ident'>u8</span>], <span class='ident'>our_secret_key</span>: <span class='kw-2'>&amp;</span><span class='ident'>SecretKey</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>Error</span><span class='op'>&gt;</span>
-    <span class='kw'>where</span> <span class='ident'>T</span>: <span class='ident'>Decodable</span>
-{
-    <span class='kw'>let</span> (<span class='ident'>public_key</span>, <span class='ident'>payload</span>) <span class='op'>=</span> <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>serialisation</span>::<span class='ident'>deserialise</span>::<span class='op'>&lt;</span>([<span class='ident'>u8</span>; <span class='ident'>box_</span>::<span class='ident'>PUBLICKEYBYTES</span>], <span class='ident'>Payload</span>)<span class='op'>&gt;</span>(<span class='ident'>message</span>));
+<span class='doccomment'>/// Parse a tuple data type from an encoded message from a sender whose public key we do not know.</span>
+<span class='doccomment'>/// Success does not provide any guarantee of correlation between the expected and actual identity</span>
+<span class='doccomment'>/// of the message sender.</span>
+<span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>anonymous_deserialise</span><span class='op'>&lt;</span><span class='ident'>T</span>: <span class='ident'>Decodable</span><span class='op'>&gt;</span>(<span class='ident'>message</span>: <span class='kw-2'>&amp;</span>[<span class='ident'>u8</span>],
+                                           <span class='ident'>our_secret_key</span>: <span class='kw-2'>&amp;</span><span class='ident'>SecretKey</span>)
+                                           <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>Error</span><span class='op'>&gt;</span> {
+    <span class='kw'>let</span> (<span class='ident'>public_key</span>, <span class='ident'>payload</span>) <span class='op'>=</span> <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>serialisation</span>::<span class='ident'>deserialise</span>::<span class='op'>&lt;</span>([<span class='ident'>u8</span>; <span class='ident'>box_</span>::<span class='ident'>PUBLICKEYBYTES</span>],
+                                                                   <span class='ident'>Payload</span>)<span class='op'>&gt;</span>(<span class='ident'>message</span>));
     <span class='kw'>let</span> <span class='ident'>plain_serialised_data</span> <span class='op'>=</span> <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>box_</span>::<span class='ident'>open</span>(<span class='kw-2'>&amp;</span><span class='ident'>payload</span>.<span class='ident'>ciphertext</span>,
                                                 <span class='kw-2'>&amp;</span><span class='ident'>payload</span>.<span class='ident'>nonce</span>,
                                                 <span class='kw-2'>&amp;</span><span class='ident'>PublicKey</span>(<span class='ident'>public_key</span>),
@@ -623,115 +605,111 @@
 <span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>test</span>)]</span>
 <span class='kw'>mod</span> <span class='ident'>test</span> {
     <span class='kw'>use</span> <span class='ident'>super</span>::<span class='op'>*</span>;
-    <span class='kw'>use</span> <span class='ident'>rand</span>;
+    <span class='kw'>use</span> <span class='ident'>rand</span>::{<span class='ident'>Rand</span>, <span class='ident'>Rng</span>};
     <span class='kw'>use</span> <span class='ident'>rand</span>::<span class='ident'>distributions</span>::{<span class='ident'>IndependentSample</span>, <span class='ident'>Range</span>};
 
     <span class='comment'>// Mutate a single byte of the slice</span>
     <span class='kw'>fn</span> <span class='ident'>tamper</span>(<span class='ident'>bytes</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> [<span class='ident'>u8</span>]) {
         <span class='kw'>let</span> <span class='ident'>range</span> <span class='op'>=</span> <span class='ident'>Range</span>::<span class='ident'>new</span>(<span class='number'>0</span>, <span class='ident'>bytes</span>.<span class='ident'>len</span>());
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>rng</span> <span class='op'>=</span> <span class='ident'>rand</span>::<span class='ident'>thread_rng</span>();
+        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>rng</span> <span class='op'>=</span> ::<span class='ident'>rand</span>::<span class='ident'>thread_rng</span>();
         <span class='kw'>let</span> <span class='ident'>index</span> <span class='op'>=</span> <span class='ident'>range</span>.<span class='ident'>ind_sample</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>rng</span>);
         <span class='ident'>bytes</span>[<span class='ident'>index</span>] <span class='op'>^=</span> <span class='number'>0x01</span>;
     }
 
-    <span class='attribute'>#[<span class='ident'>test</span>]</span>
-    <span class='kw'>fn</span> <span class='ident'>alice_to_bob_message</span>() {
-        <span class='kw'>let</span> <span class='ident'>bob_message</span> <span class='op'>=</span> (<span class='macro'>vec</span><span class='macro'>!</span>[<span class='number'>0u8</span>, <span class='number'>1</span>, <span class='number'>3</span>, <span class='number'>9</span>],
-                           <span class='macro'>vec</span><span class='macro'>!</span>[<span class='op'>-</span><span class='number'>1i64</span>, <span class='number'>888</span>, <span class='op'>-</span><span class='number'>8765</span>],
-                           <span class='string'>&quot;Message from Bob for Alice, very secret&quot;</span>.<span class='ident'>to_owned</span>());
-        <span class='kw'>let</span> (<span class='ident'>alice_public_key</span>, <span class='ident'>alice_secret_key</span>) <span class='op'>=</span> <span class='ident'>gen_keypair</span>();
-        <span class='kw'>let</span> (<span class='ident'>bob_public_key</span>, <span class='ident'>bob_secret_key</span>) <span class='op'>=</span> <span class='ident'>gen_keypair</span>();
-
-        <span class='kw'>let</span> <span class='ident'>bob_encrypted_message</span> <span class='op'>=</span> <span class='macro'>unwrap_result</span><span class='macro'>!</span>(<span class='ident'>serialise</span>(<span class='kw-2'>&amp;</span><span class='ident'>bob_message</span>,
-                                                             <span class='kw-2'>&amp;</span><span class='ident'>alice_public_key</span>,
-                                                             <span class='kw-2'>&amp;</span><span class='ident'>bob_secret_key</span>));
-
-        <span class='kw'>let</span> <span class='ident'>alice_decrypted_message</span>: (<span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>u8</span><span class='op'>&gt;</span>, <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>i64</span><span class='op'>&gt;</span>, <span class='ident'>String</span>) <span class='op'>=</span>
-            <span class='macro'>unwrap_result</span><span class='macro'>!</span>(<span class='ident'>deserialise</span>(<span class='kw-2'>&amp;</span><span class='ident'>bob_encrypted_message</span>, <span class='kw-2'>&amp;</span><span class='ident'>bob_public_key</span>, <span class='kw-2'>&amp;</span><span class='ident'>alice_secret_key</span>));
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>alice_decrypted_message</span>, <span class='ident'>bob_message</span>);
-
-        <span class='comment'>// Tamper with the encrypted message - should fail to deserialise</span>
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>corrupted_message</span> <span class='op'>=</span> <span class='ident'>bob_encrypted_message</span>.<span class='ident'>clone</span>();
-        <span class='ident'>tamper</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>corrupted_message</span>[..]);
-        <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>deserialise</span>::<span class='op'>&lt;</span>(<span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>u8</span><span class='op'>&gt;</span>, <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>i64</span><span class='op'>&gt;</span>, <span class='ident'>String</span>)<span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='ident'>corrupted_message</span>,
-                                                           <span class='kw-2'>&amp;</span><span class='ident'>bob_public_key</span>,
-                                                           <span class='kw-2'>&amp;</span><span class='ident'>alice_secret_key</span>)
-                    .<span class='ident'>is_err</span>());
-
-        <span class='comment'>// Tamper with the public key - should fail to deserialise</span>
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>corrupted_public_key</span> <span class='op'>=</span> <span class='ident'>bob_public_key</span>.<span class='ident'>clone</span>();
-        <span class='ident'>tamper</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>corrupted_public_key</span>.<span class='number'>0</span>);
-        <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>deserialise</span>::<span class='op'>&lt;</span>(<span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>u8</span><span class='op'>&gt;</span>, <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>i64</span><span class='op'>&gt;</span>, <span class='ident'>String</span>)<span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='ident'>bob_encrypted_message</span>,
-                                                           <span class='kw-2'>&amp;</span><span class='ident'>corrupted_public_key</span>,
-                                                           <span class='kw-2'>&amp;</span><span class='ident'>alice_secret_key</span>)
-                    .<span class='ident'>is_err</span>());
-
-        <span class='comment'>// Tamper with the private key - should fail to deserialise</span>
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>corrupted_secret_key</span> <span class='op'>=</span> <span class='ident'>alice_secret_key</span>.<span class='ident'>clone</span>();
-        <span class='ident'>tamper</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>corrupted_secret_key</span>.<span class='number'>0</span>);
-        <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>deserialise</span>::<span class='op'>&lt;</span>(<span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>u8</span><span class='op'>&gt;</span>, <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>i64</span><span class='op'>&gt;</span>, <span class='ident'>String</span>)<span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='ident'>bob_encrypted_message</span>,
-                                                           <span class='kw-2'>&amp;</span><span class='ident'>bob_public_key</span>,
-                                                           <span class='kw-2'>&amp;</span><span class='ident'>corrupted_secret_key</span>)
-                    .<span class='ident'>is_err</span>());
+    <span class='kw'>fn</span> <span class='ident'>generate_random_vec</span><span class='op'>&lt;</span><span class='ident'>T</span>: <span class='ident'>Rand</span><span class='op'>&gt;</span>(<span class='ident'>size</span>: <span class='ident'>usize</span>) <span class='op'>-&gt;</span> <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> {
+        ::<span class='ident'>rand</span>::<span class='ident'>thread_rng</span>().<span class='ident'>gen_iter</span>().<span class='ident'>take</span>(<span class='ident'>size</span>).<span class='ident'>collect</span>()
     }
 
+    <span class='kw'>type</span> <span class='ident'>Msg</span> <span class='op'>=</span> (<span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>u8</span><span class='op'>&gt;</span>, <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>i64</span><span class='op'>&gt;</span>, <span class='ident'>String</span>);
+
     <span class='attribute'>#[<span class='ident'>test</span>]</span>
-    <span class='kw'>fn</span> <span class='ident'>alice_to_bob_message_with_precomputed_keys</span>() {
-        <span class='kw'>let</span> <span class='ident'>bob_message</span> <span class='op'>=</span> (<span class='macro'>vec</span><span class='macro'>!</span>[<span class='number'>0u8</span>, <span class='number'>1</span>, <span class='number'>3</span>, <span class='number'>9</span>],
-                           <span class='macro'>vec</span><span class='macro'>!</span>[<span class='op'>-</span><span class='number'>1i64</span>, <span class='number'>888</span>, <span class='op'>-</span><span class='number'>8765</span>],
-                           <span class='string'>&quot;Message from Bob for Alice, very secret&quot;</span>.<span class='ident'>to_owned</span>());
+    <span class='kw'>fn</span> <span class='ident'>authenticated_encryption</span>() {
+        <span class='kw'>let</span> <span class='ident'>bob_message1</span> <span class='op'>=</span> (<span class='ident'>generate_random_vec</span>::<span class='op'>&lt;</span><span class='ident'>u8</span><span class='op'>&gt;</span>(<span class='number'>10</span>),
+                            <span class='ident'>generate_random_vec</span>::<span class='op'>&lt;</span><span class='ident'>i64</span><span class='op'>&gt;</span>(<span class='number'>100</span>),
+                            <span class='string'>&quot;Message from Bob for Alice, very secret&quot;</span>.<span class='ident'>to_owned</span>());
+        <span class='kw'>let</span> <span class='ident'>bob_message2</span> <span class='op'>=</span> <span class='ident'>generate_random_vec</span>::<span class='op'>&lt;</span><span class='ident'>u8</span><span class='op'>&gt;</span>(<span class='number'>1000</span>);
+
         <span class='kw'>let</span> (<span class='ident'>alice_public_key</span>, <span class='ident'>alice_secret_key</span>) <span class='op'>=</span> <span class='ident'>gen_keypair</span>();
         <span class='kw'>let</span> (<span class='ident'>bob_public_key</span>, <span class='ident'>bob_secret_key</span>) <span class='op'>=</span> <span class='ident'>gen_keypair</span>();
+
         <span class='kw'>let</span> <span class='ident'>bob_precomputed_key</span> <span class='op'>=</span> <span class='ident'>precompute</span>(<span class='kw-2'>&amp;</span><span class='ident'>alice_public_key</span>, <span class='kw-2'>&amp;</span><span class='ident'>bob_secret_key</span>);
         <span class='kw'>let</span> <span class='ident'>alice_precomputed_key</span> <span class='op'>=</span> <span class='ident'>precompute</span>(<span class='kw-2'>&amp;</span><span class='ident'>bob_public_key</span>, <span class='kw-2'>&amp;</span><span class='ident'>alice_secret_key</span>);
-        <span class='kw'>let</span> <span class='ident'>bob_encrypted_message</span> <span class='op'>=</span> <span class='macro'>unwrap_result</span><span class='macro'>!</span>(<span class='ident'>pre_computed_serialise</span>(<span class='kw-2'>&amp;</span><span class='ident'>bob_message</span>,
-                                                                          <span class='kw-2'>&amp;</span><span class='ident'>bob_precomputed_key</span>));
 
-        <span class='kw'>let</span> <span class='ident'>alice_decrypted_message</span>: (<span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>u8</span><span class='op'>&gt;</span>, <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>i64</span><span class='op'>&gt;</span>, <span class='ident'>String</span>) <span class='op'>=</span>
-            <span class='macro'>unwrap_result</span><span class='macro'>!</span>(<span class='ident'>pre_computed_deserialise</span>(<span class='kw-2'>&amp;</span><span class='ident'>bob_encrypted_message</span>,
+        <span class='comment'>// Encrypt message 1 with public and private keys</span>
+        <span class='kw'>let</span> <span class='ident'>bob_encrypted_message1</span> <span class='op'>=</span> <span class='macro'>unwrap_result</span><span class='macro'>!</span>(<span class='ident'>serialise</span>(<span class='kw-2'>&amp;</span><span class='ident'>bob_message1</span>,
+                                                              <span class='kw-2'>&amp;</span><span class='ident'>alice_public_key</span>,
+                                                              <span class='kw-2'>&amp;</span><span class='ident'>bob_secret_key</span>));
+        <span class='comment'>// Encrypt message 2 with precomputed key</span>
+        <span class='kw'>let</span> <span class='ident'>bob_encrypted_message2</span> <span class='op'>=</span> <span class='macro'>unwrap_result</span><span class='macro'>!</span>(<span class='ident'>pre_computed_serialise</span>(<span class='kw-2'>&amp;</span><span class='ident'>bob_message2</span>,
+                                                                           <span class='kw-2'>&amp;</span><span class='ident'>bob_precomputed_key</span>));
+
+        <span class='comment'>// Decrypt message 1 with public and private keys</span>
+        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>alice_decrypted_message1</span>: <span class='ident'>Msg</span> <span class='op'>=</span> <span class='macro'>unwrap_result</span><span class='macro'>!</span>(<span class='ident'>deserialise</span>(<span class='kw-2'>&amp;</span><span class='ident'>bob_encrypted_message1</span>,
+                                       <span class='kw-2'>&amp;</span><span class='ident'>bob_public_key</span>,
+                                       <span class='kw-2'>&amp;</span><span class='ident'>alice_secret_key</span>));
+        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>alice_decrypted_message1</span>, <span class='ident'>bob_message1</span>);
+
+        <span class='comment'>// Decrypt message 1 with precomputed key</span>
+        <span class='ident'>alice_decrypted_message1</span> <span class='op'>=</span> <span class='macro'>unwrap_result</span><span class='macro'>!</span>(<span class='ident'>pre_computed_deserialise</span>(<span class='kw-2'>&amp;</span><span class='ident'>bob_encrypted_message1</span>,
                                                     <span class='kw-2'>&amp;</span><span class='ident'>alice_precomputed_key</span>));
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>alice_decrypted_message</span>, <span class='ident'>bob_message</span>);
+        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>alice_decrypted_message1</span>, <span class='ident'>bob_message1</span>);
 
-        <span class='comment'>// Tamper with the encrypted message - should fail to deserialise</span>
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>corrupted_message</span> <span class='op'>=</span> <span class='ident'>bob_encrypted_message</span>.<span class='ident'>clone</span>();
+        <span class='comment'>// Decrypt message 2 with public and private keys</span>
+        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>alice_decrypted_message2</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>u8</span><span class='op'>&gt;</span> <span class='op'>=</span>
+            <span class='macro'>unwrap_result</span><span class='macro'>!</span>(<span class='ident'>deserialise</span>(<span class='kw-2'>&amp;</span><span class='ident'>bob_encrypted_message2</span>,
+                                       <span class='kw-2'>&amp;</span><span class='ident'>bob_public_key</span>,
+                                       <span class='kw-2'>&amp;</span><span class='ident'>alice_secret_key</span>));
+        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>alice_decrypted_message2</span>, <span class='ident'>bob_message2</span>);
+
+        <span class='comment'>// Decrypt message 2 with precomputed key</span>
+        <span class='ident'>alice_decrypted_message2</span> <span class='op'>=</span> <span class='macro'>unwrap_result</span><span class='macro'>!</span>(<span class='ident'>pre_computed_deserialise</span>(<span class='kw-2'>&amp;</span><span class='ident'>bob_encrypted_message2</span>,
+                                                    <span class='kw-2'>&amp;</span><span class='ident'>alice_precomputed_key</span>));
+        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>alice_decrypted_message2</span>, <span class='ident'>bob_message2</span>);
+
+        <span class='comment'>// Tamper with the encrypted message - should fail to deserialise for both methods</span>
+        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>corrupted_message</span> <span class='op'>=</span> <span class='ident'>bob_encrypted_message1</span>.<span class='ident'>clone</span>();
         <span class='ident'>tamper</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>corrupted_message</span>[..]);
-        <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>pre_computed_deserialise</span>::<span class='op'>&lt;</span>(<span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>u8</span><span class='op'>&gt;</span>, <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>i64</span><span class='op'>&gt;</span>, <span class='ident'>String</span>)<span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='ident'>corrupted_message</span>,
-                                                                        <span class='kw-2'>&amp;</span><span class='ident'>alice_precomputed_key</span>)
+        <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>deserialise</span>::<span class='op'>&lt;</span><span class='ident'>Msg</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='ident'>corrupted_message</span>, <span class='kw-2'>&amp;</span><span class='ident'>bob_public_key</span>, <span class='kw-2'>&amp;</span><span class='ident'>alice_secret_key</span>)
+                    .<span class='ident'>is_err</span>());
+        <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>pre_computed_deserialise</span>::<span class='op'>&lt;</span><span class='ident'>Msg</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='ident'>corrupted_message</span>, <span class='kw-2'>&amp;</span><span class='ident'>alice_precomputed_key</span>)
                     .<span class='ident'>is_err</span>());
 
-        <span class='comment'>// Use wrong key - should fail to deserialise</span>
-        <span class='kw'>let</span> <span class='ident'>wrong_key</span> <span class='op'>=</span> <span class='ident'>precompute</span>(<span class='kw-2'>&amp;</span><span class='ident'>alice_public_key</span>, <span class='kw-2'>&amp;</span><span class='ident'>alice_secret_key</span>);
-        <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>pre_computed_deserialise</span>::<span class='op'>&lt;</span>(<span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>u8</span><span class='op'>&gt;</span>, <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>i64</span><span class='op'>&gt;</span>, <span class='ident'>String</span>)<span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='ident'>bob_encrypted_message</span>,
-                                                                        <span class='kw-2'>&amp;</span><span class='ident'>wrong_key</span>)
+        <span class='comment'>// Check we can&#39;t decrypt with invalid keys</span>
+        <span class='kw'>let</span> (<span class='ident'>bad_public_key</span>, <span class='ident'>bad_secret_key</span>) <span class='op'>=</span> <span class='ident'>gen_keypair</span>();
+        <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>deserialise</span>::<span class='op'>&lt;</span><span class='ident'>Msg</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='ident'>bob_encrypted_message1</span>, <span class='kw-2'>&amp;</span><span class='ident'>bob_public_key</span>, <span class='kw-2'>&amp;</span><span class='ident'>bad_secret_key</span>)
+                    .<span class='ident'>is_err</span>());
+        <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>deserialise</span>::<span class='op'>&lt;</span><span class='ident'>Msg</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='ident'>bob_encrypted_message1</span>, <span class='kw-2'>&amp;</span><span class='ident'>bad_public_key</span>, <span class='kw-2'>&amp;</span><span class='ident'>alice_secret_key</span>)
+                    .<span class='ident'>is_err</span>());
+        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>bad_precomputed_key</span> <span class='op'>=</span> <span class='ident'>precompute</span>(<span class='kw-2'>&amp;</span><span class='ident'>bob_public_key</span>, <span class='kw-2'>&amp;</span><span class='ident'>bad_secret_key</span>);
+        <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>pre_computed_deserialise</span>::<span class='op'>&lt;</span><span class='ident'>Msg</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='ident'>bob_encrypted_message1</span>, <span class='kw-2'>&amp;</span><span class='ident'>bad_precomputed_key</span>)
+                    .<span class='ident'>is_err</span>());
+        <span class='ident'>bad_precomputed_key</span> <span class='op'>=</span> <span class='ident'>precompute</span>(<span class='kw-2'>&amp;</span><span class='ident'>bad_public_key</span>, <span class='kw-2'>&amp;</span><span class='ident'>alice_secret_key</span>);
+        <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>pre_computed_deserialise</span>::<span class='op'>&lt;</span><span class='ident'>Msg</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='ident'>bob_encrypted_message1</span>, <span class='kw-2'>&amp;</span><span class='ident'>bad_precomputed_key</span>)
                     .<span class='ident'>is_err</span>());
     }
 
     <span class='attribute'>#[<span class='ident'>test</span>]</span>
-    <span class='kw'>fn</span> <span class='ident'>anonymous_alice_to_bob_message</span>() {
-        <span class='kw'>let</span> <span class='ident'>bob_message</span> <span class='op'>=</span> (<span class='macro'>vec</span><span class='macro'>!</span>[<span class='number'>0u8</span>, <span class='number'>1</span>, <span class='number'>3</span>, <span class='number'>9</span>],
-                           <span class='macro'>vec</span><span class='macro'>!</span>[<span class='op'>-</span><span class='number'>1i64</span>, <span class='number'>888</span>, <span class='op'>-</span><span class='number'>8765</span>],
+    <span class='kw'>fn</span> <span class='ident'>anonymous_encryption</span>() {
+        <span class='kw'>let</span> <span class='ident'>bob_message</span> <span class='op'>=</span> (<span class='ident'>generate_random_vec</span>::<span class='op'>&lt;</span><span class='ident'>u8</span><span class='op'>&gt;</span>(<span class='number'>10</span>),
+                           <span class='ident'>generate_random_vec</span>::<span class='op'>&lt;</span><span class='ident'>i64</span><span class='op'>&gt;</span>(<span class='number'>100</span>),
                            <span class='string'>&quot;Message from Bob for Alice, very secret&quot;</span>.<span class='ident'>to_owned</span>());
         <span class='kw'>let</span> (<span class='ident'>alice_public_key</span>, <span class='ident'>alice_secret_key</span>) <span class='op'>=</span> <span class='ident'>gen_keypair</span>();
 
-        <span class='kw'>let</span> <span class='ident'>bob_encrypted_message</span> <span class='op'>=</span> <span class='macro'>unwrap_result</span><span class='macro'>!</span>(<span class='ident'>anonymous_serialise</span>(<span class='kw-2'>&amp;</span><span class='ident'>bob_message</span>, <span class='kw-2'>&amp;</span><span class='ident'>alice_public_key</span>));
+        <span class='kw'>let</span> <span class='ident'>bob_encrypted_message</span> <span class='op'>=</span> <span class='macro'>unwrap_result</span><span class='macro'>!</span>(<span class='ident'>anonymous_serialise</span>(<span class='kw-2'>&amp;</span><span class='ident'>bob_message</span>,
+                                                                       <span class='kw-2'>&amp;</span><span class='ident'>alice_public_key</span>));
 
-        <span class='kw'>let</span> <span class='ident'>alice_decrypted_message</span>: (<span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>u8</span><span class='op'>&gt;</span>, <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>i64</span><span class='op'>&gt;</span>, <span class='ident'>String</span>) <span class='op'>=</span>
+        <span class='kw'>let</span> <span class='ident'>alice_decrypted_message</span>: <span class='ident'>Msg</span> <span class='op'>=</span>
             <span class='macro'>unwrap_result</span><span class='macro'>!</span>(<span class='ident'>anonymous_deserialise</span>(<span class='kw-2'>&amp;</span><span class='ident'>bob_encrypted_message</span>, <span class='kw-2'>&amp;</span><span class='ident'>alice_secret_key</span>));
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>alice_decrypted_message</span>, <span class='ident'>bob_message</span>);
 
         <span class='comment'>// Tamper with the encrypted message - should fail to deserialise</span>
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>corrupted_message</span> <span class='op'>=</span> <span class='ident'>bob_encrypted_message</span>.<span class='ident'>clone</span>();
         <span class='ident'>tamper</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>corrupted_message</span>[..]);
-        <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>anonymous_deserialise</span>::<span class='op'>&lt;</span>(<span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>u8</span><span class='op'>&gt;</span>, <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>i64</span><span class='op'>&gt;</span>, <span class='ident'>String</span>)<span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='ident'>corrupted_message</span>,
-                                                                     <span class='kw-2'>&amp;</span><span class='ident'>alice_secret_key</span>)
-                    .<span class='ident'>is_err</span>());
+        <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>anonymous_deserialise</span>::<span class='op'>&lt;</span><span class='ident'>Msg</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='ident'>corrupted_message</span>, <span class='kw-2'>&amp;</span><span class='ident'>alice_secret_key</span>).<span class='ident'>is_err</span>());
 
-        <span class='comment'>// Tamper with the private key - should fail to deserialise</span>
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>corrupted_secret_key</span> <span class='op'>=</span> <span class='ident'>alice_secret_key</span>.<span class='ident'>clone</span>();
-        <span class='ident'>tamper</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>corrupted_secret_key</span>.<span class='number'>0</span>);
-        <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>anonymous_deserialise</span>::<span class='op'>&lt;</span>(<span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>u8</span><span class='op'>&gt;</span>, <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>i64</span><span class='op'>&gt;</span>, <span class='ident'>String</span>)<span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='ident'>bob_encrypted_message</span>,
-                                                                     <span class='kw-2'>&amp;</span><span class='ident'>corrupted_secret_key</span>)
-                    .<span class='ident'>is_err</span>());
+        <span class='comment'>// Check we can&#39;t decrypt with invalid keys</span>
+        <span class='kw'>let</span> <span class='ident'>bad_secret_key</span> <span class='op'>=</span> <span class='ident'>gen_keypair</span>().<span class='number'>1</span>;
+        <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>anonymous_deserialise</span>::<span class='op'>&lt;</span><span class='ident'>Msg</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='ident'>bob_encrypted_message</span>, <span class='kw-2'>&amp;</span><span class='ident'>bad_secret_key</span>).<span class='ident'>is_err</span>());
     }
 }
 </pre>
