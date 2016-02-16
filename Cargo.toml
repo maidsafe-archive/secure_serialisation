@@ -10,10 +10,10 @@ repository = "https://github.com/maidsafe/secure_serialisation"
 version = "0.1.0"
 
 [dependencies]
-clippy = {version = "~0.0.37", optional = true}
+clippy = {version = "~0.0.41", optional = true}
 maidsafe_utilities = "~0.1.5"
-rustc-serialize = "~0.3.16"
+rustc-serialize = "~0.3.18"
 sodiumoxide = "~0.0.9"
 
 [dev-dependencies]
-rand = "~0.3.13"
+rand = "~0.3.14"
