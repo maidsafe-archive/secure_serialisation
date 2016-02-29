@@ -10,8 +10,8 @@ repository = "https://github.com/maidsafe/secure_serialisation"
 version = "0.2.0"
 
 [dependencies]
-clippy = {version = "~0.0.41", optional = true}
-maidsafe_utilities = "~0.1.5"
+clippy = {version = "~0.0.44", optional = true}
+maidsafe_utilities = "~0.2.1"
 rustc-serialize = "~0.3.18"
 sodiumoxide = "~0.0.9"
 
