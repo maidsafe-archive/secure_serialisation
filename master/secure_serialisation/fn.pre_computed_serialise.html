@@ -46,7 +46,7 @@
             <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
                 [<span class='inner'>&#x2212;</span>]
             </a>
-        </span><a id='src-55' class='srclink' href='../src/secure_serialisation/lib.rs.html#136-147' title='goto source code'>[src]</a></span></h1>
+        </span><a id='src-55' class='srclink' href='../src/secure_serialisation/lib.rs.html#137-148' title='goto source code'>[src]</a></span></h1>
 <pre class='rust fn'>pub fn pre_computed_serialise&lt;T: <a class='trait' href='../rustc_serialize/serialize/trait.Encodable.html' title='rustc_serialize::serialize::Encodable'>Encodable</a>&gt;(data: &amp;T, pre_computed_key: &amp;<a class='struct' href='../secure_serialisation/struct.PrecomputedKey.html' title='secure_serialisation::PrecomputedKey'>PrecomputedKey</a>) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='struct' href='https://doc.rust-lang.org/nightly/collections/vec/struct.Vec.html' title='collections::vec::Vec'>Vec</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u8.html'>u8</a>&gt;, <a class='enum' href='../secure_serialisation/enum.Error.html' title='secure_serialisation::Error'>Error</a>&gt;</pre><div class='docblock'><p>Prepare an encodable data element for transmission to another process whose public key we
 know, and which is pre-computed.  This is less CPU-intensive than
 <a href="fn.serialise.html"><code>serialise()</code></a> which can be useful if many messages are to be transferred.</p>
