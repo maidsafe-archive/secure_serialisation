@@ -7,11 +7,11 @@ license = "GPL-3.0"
 name = "secure_serialisation"
 readme = "README.md"
 repository = "https://github.com/maidsafe/secure_serialisation"
-version = "0.2.0"
+version = "0.3.0"
 
 [dependencies]
-clippy = {version = "~0.0.44", optional = true}
-maidsafe_utilities = "~0.3.0"
+clippy = {version = "~0.0.45", optional = true}
+maidsafe_utilities = "~0.4.0"
 rustc-serialize = "~0.3.18"
 sodiumoxide = "~0.0.9"
 
