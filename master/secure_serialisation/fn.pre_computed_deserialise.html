@@ -26,7 +26,7 @@
     
 
     <nav class="sidebar">
-        <a href='../secure_serialisation/index.html'><img src='https://raw.githubusercontent.com/maidsafe/QA/master/Images/maidsafe_logo.png' alt='' width='100'></a>
+        <a href='../secure_serialisation/index.html'><img src='https://raw.githubusercontent.com/maidsafe/QA/master/Images/maidsafe_logo.png' alt='logo' width='100'></a>
         <p class='location'><a href='index.html'>secure_serialisation</a></p><script>window.sidebarCurrent = {name: 'pre_computed_deserialise', ty: 'fn', relpath: ''};</script><script defer src="sidebar-items.js"></script>
     </nav>
 
@@ -46,7 +46,7 @@
             <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
                 [<span class='inner'>&#x2212;</span>]
             </a>
-        </span><a id='src-78' class='srclink' href='../src/secure_serialisation/lib.rs.html#169-177' title='goto source code'>[src]</a></span></h1>
+        </span><a id='src-78' class='srclink' href='../src/secure_serialisation/src/lib.rs.html#169-177' title='goto source code'>[src]</a></span></h1>
 <pre class='rust fn'>pub fn pre_computed_deserialise&lt;T: <a class='trait' href='../rustc_serialize/serialize/trait.Decodable.html' title='rustc_serialize::serialize::Decodable'>Decodable</a>&gt;(message: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.slice.html'>&amp;[</a><a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u8.html'>u8</a><a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.slice.html'>]</a>, pre_computed_key: &amp;<a class='struct' href='../secure_serialisation/struct.PrecomputedKey.html' title='secure_serialisation::PrecomputedKey'>PrecomputedKey</a>) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;T, <a class='enum' href='../secure_serialisation/enum.Error.html' title='secure_serialisation::Error'>Error</a>&gt;</pre><div class='docblock'><p>Parse a data type from an encoded message from a sender whose public key we know, and which is
 pre-computed.  This is less CPU-intensive than <a href="fn.deserialise.html"><code>deserialise()</code></a> which can
 be useful if many messages are to be transferred.  Success ensures the message was from the
@@ -94,7 +94,7 @@ holder of the private key related to the public key we know of the sender.</p>
 
                 <p>
                     Search functions by type signature (e.g.
-                    <code>vec -> usize</code>)
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
                 </p>
             </div>
         </div>
