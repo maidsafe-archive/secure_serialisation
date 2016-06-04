@@ -11,6 +11,7 @@
 
     <link rel="stylesheet" type="text/css" href="../rustdoc.css">
     <link rel="stylesheet" type="text/css" href="../main.css">
+    
 
     <link rel="shortcut icon" href="http://maidsafe.net/img/favicon.ico">
     
@@ -43,10 +44,10 @@
 
     <section id='main' class="content mod">
 <h1 class='fqn'><span class='in-band'>Crate <a class='mod' href=''>secure_serialisation</a></span><span class='out-of-band'><span id='render-detail'>
-            <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
-                [<span class='inner'>&#x2212;</span>]
-            </a>
-        </span><a id='src-0' class='srclink' href='../src/secure_serialisation/src/lib.rs.html#18-336' title='goto source code'>[src]</a></span></h1>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a id='src-0' class='srclink' href='../src/secure_serialisation/src/lib.rs.html#18-336' title='goto source code'>[src]</a></span></h1>
 <div class='docblock'>
 <h1 id='secure-serialisation' class='section-header'><a href='#secure-serialisation'>Secure Serialisation</a></h1>
 <p>Given a remote nacl box PublicKey this lib will securely serialise and encrypt messages destined
@@ -99,118 +100,106 @@ own message later.  And without additional data, a message cannot be correlated 
 identity of its sender.</p>
 </div><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
 <table>
-                    <tr class=' module-item'>
-                        <td><a class='struct' href='struct.PrecomputedKey.html'
-                               title='secure_serialisation::PrecomputedKey'>PrecomputedKey</a></td>
-                        <td class='docblock short'>
-                             <p>Applications that send several messages to the same receiver can gain speed by
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.PrecomputedKey.html'
+                                  title='secure_serialisation::PrecomputedKey'>PrecomputedKey</a></td>
+                           <td class='docblock short'>
+                                <p>Applications that send several messages to the same receiver can gain speed by
 splitting <code>seal()</code> into two steps, <code>precompute()</code> and <code>seal_precomputed()</code>.
 Similarly, applications that receive several messages from the same sender can gain
 speed by splitting <code>open()</code> into two steps, <code>precompute()</code> and <code>open_precomputed()</code>.</p>
-                        </td>
-                    </tr>
-                
-                    <tr class=' module-item'>
-                        <td><a class='struct' href='struct.PublicKey.html'
-                               title='secure_serialisation::PublicKey'>PublicKey</a></td>
-                        <td class='docblock short'>
-                             <p><code>PublicKey</code> for asymmetric authenticated encryption</p>
-                        </td>
-                    </tr>
-                
-                    <tr class=' module-item'>
-                        <td><a class='struct' href='struct.SecretKey.html'
-                               title='secure_serialisation::SecretKey'>SecretKey</a></td>
-                        <td class='docblock short'>
-                             <p><code>SecretKey</code> for asymmetric authenticated encryption</p>
-                        </td>
-                    </tr>
-                </table><h2 id='enums' class='section-header'><a href="#enums">Enums</a></h2>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.PublicKey.html'
+                                  title='secure_serialisation::PublicKey'>PublicKey</a></td>
+                           <td class='docblock short'>
+                                <p><code>PublicKey</code> for asymmetric authenticated encryption</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.SecretKey.html'
+                                  title='secure_serialisation::SecretKey'>SecretKey</a></td>
+                           <td class='docblock short'>
+                                <p><code>SecretKey</code> for asymmetric authenticated encryption</p>
+                           </td>
+                       </tr></table><h2 id='enums' class='section-header'><a href="#enums">Enums</a></h2>
 <table>
-                    <tr class=' module-item'>
-                        <td><a class='enum' href='enum.Error.html'
-                               title='secure_serialisation::Error'>Error</a></td>
-                        <td class='docblock short'>
-                             <p>Error types.</p>
-                        </td>
-                    </tr>
-                </table><h2 id='functions' class='section-header'><a href="#functions">Functions</a></h2>
+                       <tr class=' module-item'>
+                           <td><a class='enum' href='enum.Error.html'
+                                  title='secure_serialisation::Error'>Error</a></td>
+                           <td class='docblock short'>
+                                <p>Error types.</p>
+                           </td>
+                       </tr></table><h2 id='functions' class='section-header'><a href="#functions">Functions</a></h2>
 <table>
-                    <tr class=' module-item'>
-                        <td><a class='fn' href='fn.anonymous_deserialise.html'
-                               title='secure_serialisation::anonymous_deserialise'>anonymous_deserialise</a></td>
-                        <td class='docblock short'>
-                             <p>Parse a tuple data type from an encoded message from a sender whose public key we do not know.
+                       <tr class=' module-item'>
+                           <td><a class='fn' href='fn.anonymous_deserialise.html'
+                                  title='secure_serialisation::anonymous_deserialise'>anonymous_deserialise</a></td>
+                           <td class='docblock short'>
+                                <p>Parse a tuple data type from an encoded message from a sender whose public key we do not know.
 Success does not provide any guarantee of correlation between the expected and actual identity
 of the message sender.</p>
-                        </td>
-                    </tr>
-                
-                    <tr class=' module-item'>
-                        <td><a class='fn' href='fn.anonymous_serialise.html'
-                               title='secure_serialisation::anonymous_serialise'>anonymous_serialise</a></td>
-                        <td class='docblock short'>
-                             <p>Prepare an encodable data element for transmission to another process, whose public key we know,
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='fn' href='fn.anonymous_serialise.html'
+                                  title='secure_serialisation::anonymous_serialise'>anonymous_serialise</a></td>
+                           <td class='docblock short'>
+                                <p>Prepare an encodable data element for transmission to another process, whose public key we know,
 that does not know our public key.</p>
-                        </td>
-                    </tr>
-                
-                    <tr class=' module-item'>
-                        <td><a class='fn' href='fn.deserialise.html'
-                               title='secure_serialisation::deserialise'>deserialise</a></td>
-                        <td class='docblock short'>
-                             <p>Parse a data type from an encoded message from a sender whose public key we know.  Success
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='fn' href='fn.deserialise.html'
+                                  title='secure_serialisation::deserialise'>deserialise</a></td>
+                           <td class='docblock short'>
+                                <p>Parse a data type from an encoded message from a sender whose public key we know.  Success
 ensures the message was from the holder of the private key related to the public key we know of
 the sender.</p>
-                        </td>
-                    </tr>
-                
-                    <tr class=' module-item'>
-                        <td><a class='fn' href='fn.gen_keypair.html'
-                               title='secure_serialisation::gen_keypair'>gen_keypair</a></td>
-                        <td class='docblock short'>
-                             <p><code>gen_keypair()</code> randomly generates a secret key and a corresponding public key.</p>
-                        </td>
-                    </tr>
-                
-                    <tr class=' module-item'>
-                        <td><a class='fn' href='fn.pre_computed_deserialise.html'
-                               title='secure_serialisation::pre_computed_deserialise'>pre_computed_deserialise</a></td>
-                        <td class='docblock short'>
-                             <p>Parse a data type from an encoded message from a sender whose public key we know, and which is
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='fn' href='fn.gen_keypair.html'
+                                  title='secure_serialisation::gen_keypair'>gen_keypair</a></td>
+                           <td class='docblock short'>
+                                <p><code>gen_keypair()</code> randomly generates a secret key and a corresponding public key.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='fn' href='fn.pre_computed_deserialise.html'
+                                  title='secure_serialisation::pre_computed_deserialise'>pre_computed_deserialise</a></td>
+                           <td class='docblock short'>
+                                <p>Parse a data type from an encoded message from a sender whose public key we know, and which is
 pre-computed.  This is less CPU-intensive than <a href="fn.deserialise.html"><code>deserialise()</code></a> which can
 be useful if many messages are to be transferred.  Success ensures the message was from the
 holder of the private key related to the public key we know of the sender.</p>
-                        </td>
-                    </tr>
-                
-                    <tr class=' module-item'>
-                        <td><a class='fn' href='fn.pre_computed_serialise.html'
-                               title='secure_serialisation::pre_computed_serialise'>pre_computed_serialise</a></td>
-                        <td class='docblock short'>
-                             <p>Prepare an encodable data element for transmission to another process whose public key we
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='fn' href='fn.pre_computed_serialise.html'
+                                  title='secure_serialisation::pre_computed_serialise'>pre_computed_serialise</a></td>
+                           <td class='docblock short'>
+                                <p>Prepare an encodable data element for transmission to another process whose public key we
 know, and which is pre-computed.  This is less CPU-intensive than
 <a href="fn.serialise.html"><code>serialise()</code></a> which can be useful if many messages are to be transferred.</p>
-                        </td>
-                    </tr>
-                
-                    <tr class=' module-item'>
-                        <td><a class='fn' href='fn.precompute.html'
-                               title='secure_serialisation::precompute'>precompute</a></td>
-                        <td class='docblock short'>
-                             <p><code>precompute()</code> computes an intermediate key that can be used by <code>seal_precomputed()</code>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='fn' href='fn.precompute.html'
+                                  title='secure_serialisation::precompute'>precompute</a></td>
+                           <td class='docblock short'>
+                                <p><code>precompute()</code> computes an intermediate key that can be used by <code>seal_precomputed()</code>
 and <code>open_precomputed()</code></p>
-                        </td>
-                    </tr>
-                
-                    <tr class=' module-item'>
-                        <td><a class='fn' href='fn.serialise.html'
-                               title='secure_serialisation::serialise'>serialise</a></td>
-                        <td class='docblock short'>
-                             <p>Prepare an encodable data element for transmission to another process whose public key we know.</p>
-                        </td>
-                    </tr>
-                </table></section>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='fn' href='fn.serialise.html'
+                                  title='secure_serialisation::serialise'>serialise</a></td>
+                           <td class='docblock short'>
+                                <p>Prepare an encodable data element for transmission to another process whose public key we know.</p>
+                           </td>
+                       </tr></table></section>
     <section id='search' class="content hidden"></section>
 
     <section class="footer"></section>

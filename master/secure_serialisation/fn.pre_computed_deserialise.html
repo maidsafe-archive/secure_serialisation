@@ -11,6 +11,7 @@
 
     <link rel="stylesheet" type="text/css" href="../rustdoc.css">
     <link rel="stylesheet" type="text/css" href="../main.css">
+    
 
     <link rel="shortcut icon" href="http://maidsafe.net/img/favicon.ico">
     
@@ -43,10 +44,10 @@
 
     <section id='main' class="content fn">
 <h1 class='fqn'><span class='in-band'>Function <a href='index.html'>secure_serialisation</a>::<wbr><a class='fn' href=''>pre_computed_deserialise</a></span><span class='out-of-band'><span id='render-detail'>
-            <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
-                [<span class='inner'>&#x2212;</span>]
-            </a>
-        </span><a id='src-78' class='srclink' href='../src/secure_serialisation/src/lib.rs.html#169-177' title='goto source code'>[src]</a></span></h1>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a id='src-78' class='srclink' href='../src/secure_serialisation/src/lib.rs.html#169-177' title='goto source code'>[src]</a></span></h1>
 <pre class='rust fn'>pub fn pre_computed_deserialise&lt;T: <a class='trait' href='../rustc_serialize/serialize/trait.Decodable.html' title='rustc_serialize::serialize::Decodable'>Decodable</a>&gt;(message: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.slice.html'>&amp;[</a><a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u8.html'>u8</a><a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.slice.html'>]</a>, pre_computed_key: &amp;<a class='struct' href='../secure_serialisation/struct.PrecomputedKey.html' title='secure_serialisation::PrecomputedKey'>PrecomputedKey</a>) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;T, <a class='enum' href='../secure_serialisation/enum.Error.html' title='secure_serialisation::Error'>Error</a>&gt;</pre><div class='docblock'><p>Parse a data type from an encoded message from a sender whose public key we know, and which is
 pre-computed.  This is less CPU-intensive than <a href="fn.deserialise.html"><code>deserialise()</code></a> which can
 be useful if many messages are to be transferred.  Success ensures the message was from the

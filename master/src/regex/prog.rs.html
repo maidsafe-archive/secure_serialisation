@@ -4,13 +4,14 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-88ac128001ac3a9a/regex-0.1.68/src/prog.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-88ac128001ac3a9a/regex-0.1.71/src/prog.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>prog.rs.html -- source</title>
 
     <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
     <link rel="stylesheet" type="text/css" href="../../main.css">
+    
 
     <link rel="shortcut icon" href="https://www.rust-lang.org/favicon.ico">
     
@@ -470,6 +471,33 @@
 <span id="427">427</span>
 <span id="428">428</span>
 <span id="429">429</span>
+<span id="430">430</span>
+<span id="431">431</span>
+<span id="432">432</span>
+<span id="433">433</span>
+<span id="434">434</span>
+<span id="435">435</span>
+<span id="436">436</span>
+<span id="437">437</span>
+<span id="438">438</span>
+<span id="439">439</span>
+<span id="440">440</span>
+<span id="441">441</span>
+<span id="442">442</span>
+<span id="443">443</span>
+<span id="444">444</span>
+<span id="445">445</span>
+<span id="446">446</span>
+<span id="447">447</span>
+<span id="448">448</span>
+<span id="449">449</span>
+<span id="450">450</span>
+<span id="451">451</span>
+<span id="452">452</span>
+<span id="453">453</span>
+<span id="454">454</span>
+<span id="455">455</span>
+<span id="456">456</span>
 </pre><pre class='rust '>
 <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>collections</span>::<span class='ident'>HashMap</span>;
 <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>cmp</span>::<span class='ident'>Ordering</span>;
@@ -529,6 +557,22 @@
     <span class='kw'>pub</span> <span class='ident'>has_unicode_word_boundary</span>: <span class='ident'>bool</span>,
     <span class='doccomment'>/// A possibly empty machine for very quickly matching prefix literals.</span>
     <span class='kw'>pub</span> <span class='ident'>prefixes</span>: <span class='ident'>LiteralSearcher</span>,
+    <span class='doccomment'>/// A limit on the size of the cache that the DFA is allowed to use while</span>
+    <span class='doccomment'>/// matching.</span>
+    <span class='doccomment'>///</span>
+    <span class='doccomment'>/// The cache limit specifies approximately how much space we&#39;re willing to</span>
+    <span class='doccomment'>/// give to the state cache. Once the state cache exceeds the size, it is</span>
+    <span class='doccomment'>/// wiped and all states must be re-computed.</span>
+    <span class='doccomment'>///</span>
+    <span class='doccomment'>/// Note that this value does not impact correctness. It can be set to 0</span>
+    <span class='doccomment'>/// and the DFA will run just fine. (It will only ever store exactly one</span>
+    <span class='doccomment'>/// state in the cache, and will likely run very slowly, but it will work.)</span>
+    <span class='doccomment'>///</span>
+    <span class='doccomment'>/// Also note that this limit is *per thread of execution*. That is,</span>
+    <span class='doccomment'>/// if the same regex is used to search text across multiple threads</span>
+    <span class='doccomment'>/// simultaneously, then the DFA cache is not shared. Instead, copies are</span>
+    <span class='doccomment'>/// made.</span>
+    <span class='kw'>pub</span> <span class='ident'>dfa_size_limit</span>: <span class='ident'>usize</span>,
 }
 
 <span class='kw'>impl</span> <span class='ident'>Program</span> {
@@ -550,6 +594,7 @@
             <span class='ident'>is_anchored_end</span>: <span class='boolval'>false</span>,
             <span class='ident'>has_unicode_word_boundary</span>: <span class='boolval'>false</span>,
             <span class='ident'>prefixes</span>: <span class='ident'>LiteralSearcher</span>::<span class='ident'>empty</span>(),
+            <span class='ident'>dfa_size_limit</span>: <span class='number'>2</span> <span class='op'>*</span> (<span class='number'>1</span><span class='op'>&lt;&lt;</span><span class='number'>20</span>),
         }
     }
 
@@ -588,7 +633,7 @@
     <span class='doccomment'>/// Returns true if this program uses Byte instructions instead of</span>
     <span class='doccomment'>/// Char/Range instructions.</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>uses_bytes</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>bool</span> {
-        <span class='self'>self</span>.<span class='ident'>is_bytes</span> <span class='op'>||</span> <span class='self'>self</span>.<span class='ident'>is_dfa</span> <span class='op'>||</span> <span class='op'>!</span><span class='self'>self</span>.<span class='ident'>only_utf8</span>
+        <span class='self'>self</span>.<span class='ident'>is_bytes</span> <span class='op'>||</span> <span class='self'>self</span>.<span class='ident'>is_dfa</span>
     }
 
     <span class='doccomment'>/// Returns true if this program exclusively matches valid UTF-8 bytes.</span>
@@ -743,6 +788,16 @@
     <span class='doccomment'>/// used in conjunction with Split instructions to implement multi-byte</span>
     <span class='doccomment'>/// character classes.</span>
     <span class='ident'>Bytes</span>(<span class='ident'>InstBytes</span>),
+}
+
+<span class='kw'>impl</span> <span class='ident'>Inst</span> {
+    <span class='doccomment'>/// Returns true if and only if this is a match instruction.</span>
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>is_match</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>bool</span> {
+        <span class='kw'>match</span> <span class='op'>*</span><span class='self'>self</span> {
+            <span class='ident'>Inst</span>::<span class='ident'>Match</span>(_) <span class='op'>=&gt;</span> <span class='boolval'>true</span>,
+            _ <span class='op'>=&gt;</span> <span class='boolval'>false</span>,
+        }
+    }
 }
 
 <span class='doccomment'>/// Representation of the Save instruction.</span>

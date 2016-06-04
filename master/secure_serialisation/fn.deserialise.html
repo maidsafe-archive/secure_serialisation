@@ -11,6 +11,7 @@
 
     <link rel="stylesheet" type="text/css" href="../rustdoc.css">
     <link rel="stylesheet" type="text/css" href="../main.css">
+    
 
     <link rel="shortcut icon" href="http://maidsafe.net/img/favicon.ico">
     
@@ -43,10 +44,10 @@
 
     <section id='main' class="content fn">
 <h1 class='fqn'><span class='in-band'>Function <a href='index.html'>secure_serialisation</a>::<wbr><a class='fn' href=''>deserialise</a></span><span class='out-of-band'><span id='render-detail'>
-            <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
-                [<span class='inner'>&#x2212;</span>]
-            </a>
-        </span><a id='src-90' class='srclink' href='../src/secure_serialisation/src/lib.rs.html#182-192' title='goto source code'>[src]</a></span></h1>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a id='src-90' class='srclink' href='../src/secure_serialisation/src/lib.rs.html#182-192' title='goto source code'>[src]</a></span></h1>
 <pre class='rust fn'>pub fn deserialise&lt;T: <a class='trait' href='../rustc_serialize/serialize/trait.Decodable.html' title='rustc_serialize::serialize::Decodable'>Decodable</a>&gt;(message: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.slice.html'>&amp;[</a><a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u8.html'>u8</a><a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.slice.html'>]</a>, their_public_key: &amp;<a class='struct' href='../secure_serialisation/struct.PublicKey.html' title='secure_serialisation::PublicKey'>PublicKey</a>, our_secret_key: &amp;<a class='struct' href='../secure_serialisation/struct.SecretKey.html' title='secure_serialisation::SecretKey'>SecretKey</a>) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;T, <a class='enum' href='../secure_serialisation/enum.Error.html' title='secure_serialisation::Error'>Error</a>&gt;</pre><div class='docblock'><p>Parse a data type from an encoded message from a sender whose public key we know.  Success
 ensures the message was from the holder of the private key related to the public key we know of
 the sender.</p>
