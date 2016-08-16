@@ -17,8 +17,8 @@
 
 //! # Secure Serialisation
 //!
-//! Given a remote nacl box PublicKey this lib will securely serialise and encrypt messages destined
-//! for that node.  These will use authenticated encryption.
+//! Given a remote nacl box `PublicKey` this lib will securely serialise and encrypt messages
+//! destined for that node.  These will use authenticated encryption.
 //!
 //! # Authenticated encryption
 //! Using public-key authenticated encryption, Bob can encrypt a confidential message specifically
@@ -95,12 +95,12 @@ extern crate maidsafe_utilities;
 #[cfg(test)]
 extern crate rand;
 extern crate rustc_serialize;
-extern crate sodiumoxide;
+extern crate rust_sodium;
 
-pub use sodiumoxide::crypto::box_::{PrecomputedKey, PublicKey, SecretKey, gen_keypair, precompute};
-
-use sodiumoxide::crypto::box_::{self, Nonce};
 use maidsafe_utilities::serialisation;
+
+use rust_sodium::crypto::box_::{self, Nonce};
+pub use rust_sodium::crypto::box_::{PrecomputedKey, PublicKey, SecretKey, gen_keypair, precompute};
 use rustc_serialize::{Decodable, Encodable};
 
 /// Error types.
@@ -170,9 +170,8 @@ pub fn pre_computed_deserialise<T: Decodable>(message: &[u8],
                                               pre_computed_key: &PrecomputedKey)
                                               -> Result<T, Error> {
     let payload = try!(serialisation::deserialise::<Payload>(message));
-    let plain_serialised_data = try!(box_::open_precomputed(&payload.ciphertext,
-                                                            &payload.nonce,
-                                                            pre_computed_key));
+    let plain_serialised_data =
+        try!(box_::open_precomputed(&payload.ciphertext, &payload.nonce, pre_computed_key));
     Ok(try!(serialisation::deserialise(&plain_serialised_data)))
 }
 
@@ -225,10 +224,10 @@ pub fn anonymous_deserialise<T: Decodable>(message: &[u8],
 
 
 #[cfg(test)]
-mod test {
-    use super::*;
+mod tests {
     use rand::{Rand, Rng};
     use rand::distributions::{IndependentSample, Range};
+    use super::*;
 
     // Mutate a single byte of the slice
     fn tamper(bytes: &mut [u8]) {
@@ -258,9 +257,8 @@ mod test {
         let alice_precomputed_key = precompute(&bob_public_key, &alice_secret_key);
 
         // Encrypt message 1 with public and private keys
-        let bob_encrypted_message1 = unwrap_result!(serialise(&bob_message1,
-                                                              &alice_public_key,
-                                                              &bob_secret_key));
+        let bob_encrypted_message1 =
+            unwrap_result!(serialise(&bob_message1, &alice_public_key, &bob_secret_key));
         // Encrypt message 2 with precomputed key
         let bob_encrypted_message2 = unwrap_result!(pre_computed_serialise(&bob_message2,
                                                                            &bob_precomputed_key));
@@ -292,22 +290,22 @@ mod test {
         let mut corrupted_message = bob_encrypted_message1.clone();
         tamper(&mut corrupted_message[..]);
         assert!(deserialise::<Msg>(&corrupted_message, &bob_public_key, &alice_secret_key)
-                    .is_err());
+            .is_err());
         assert!(pre_computed_deserialise::<Msg>(&corrupted_message, &alice_precomputed_key)
-                    .is_err());
+            .is_err());
 
         // Check we can't decrypt with invalid keys
         let (bad_public_key, bad_secret_key) = gen_keypair();
         assert!(deserialise::<Msg>(&bob_encrypted_message1, &bob_public_key, &bad_secret_key)
-                    .is_err());
+            .is_err());
         assert!(deserialise::<Msg>(&bob_encrypted_message1, &bad_public_key, &alice_secret_key)
-                    .is_err());
+            .is_err());
         let mut bad_precomputed_key = precompute(&bob_public_key, &bad_secret_key);
         assert!(pre_computed_deserialise::<Msg>(&bob_encrypted_message1, &bad_precomputed_key)
-                    .is_err());
+            .is_err());
         bad_precomputed_key = precompute(&bad_public_key, &alice_secret_key);
         assert!(pre_computed_deserialise::<Msg>(&bob_encrypted_message1, &bad_precomputed_key)
-                    .is_err());
+            .is_err());
     }
 
     #[test]
