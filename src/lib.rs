@@ -97,10 +97,10 @@ extern crate rand;
 extern crate rustc_serialize;
 extern crate rust_sodium;
 
-pub use rust_sodium::crypto::box_::{PrecomputedKey, PublicKey, SecretKey, gen_keypair, precompute};
+use maidsafe_utilities::serialisation;
 
 use rust_sodium::crypto::box_::{self, Nonce};
-use maidsafe_utilities::serialisation;
+pub use rust_sodium::crypto::box_::{PrecomputedKey, PublicKey, SecretKey, gen_keypair, precompute};
 use rustc_serialize::{Decodable, Encodable};
 
 /// Error types.
@@ -225,9 +225,9 @@ pub fn anonymous_deserialise<T: Decodable>(message: &[u8],
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use rand::{Rand, Rng};
     use rand::distributions::{IndependentSample, Range};
+    use super::*;
 
     // Mutate a single byte of the slice
     fn tamper(bytes: &mut [u8]) {
