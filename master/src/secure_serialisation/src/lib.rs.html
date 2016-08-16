@@ -376,8 +376,6 @@
 <span id="332">332</span>
 <span id="333">333</span>
 <span id="334">334</span>
-<span id="335">335</span>
-<span id="336">336</span>
 </pre><pre class='rust '>
 <span class='comment'>// Copyright 2016 MaidSafe.net limited.</span>
 <span class='comment'>//</span>
@@ -398,8 +396,8 @@
 
 <span class='doccomment'>//! # Secure Serialisation</span>
 <span class='doccomment'>//!</span>
-<span class='doccomment'>//! Given a remote nacl box PublicKey this lib will securely serialise and encrypt messages destined</span>
-<span class='doccomment'>//! for that node.  These will use authenticated encryption.</span>
+<span class='doccomment'>//! Given a remote nacl box `PublicKey` this lib will securely serialise and encrypt messages</span>
+<span class='doccomment'>//! destined for that node.  These will use authenticated encryption.</span>
 <span class='doccomment'>//!</span>
 <span class='doccomment'>//! # Authenticated encryption</span>
 <span class='doccomment'>//! Using public-key authenticated encryption, Bob can encrypt a confidential message specifically</span>
@@ -476,12 +474,12 @@
 <span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>test</span>)]</span>
 <span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>rand</span>;
 <span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>rustc_serialize</span>;
-<span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>sodiumoxide</span>;
+<span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>rust_sodium</span>;
 
-<span class='kw'>pub</span> <span class='kw'>use</span> <span class='ident'>sodiumoxide</span>::<span class='ident'>crypto</span>::<span class='ident'>box_</span>::{<span class='ident'>PrecomputedKey</span>, <span class='ident'>PublicKey</span>, <span class='ident'>SecretKey</span>, <span class='ident'>gen_keypair</span>, <span class='ident'>precompute</span>};
-
-<span class='kw'>use</span> <span class='ident'>sodiumoxide</span>::<span class='ident'>crypto</span>::<span class='ident'>box_</span>::{<span class='self'>self</span>, <span class='ident'>Nonce</span>};
 <span class='kw'>use</span> <span class='ident'>maidsafe_utilities</span>::<span class='ident'>serialisation</span>;
+
+<span class='kw'>use</span> <span class='ident'>rust_sodium</span>::<span class='ident'>crypto</span>::<span class='ident'>box_</span>::{<span class='self'>self</span>, <span class='ident'>Nonce</span>};
+<span class='kw'>pub</span> <span class='kw'>use</span> <span class='ident'>rust_sodium</span>::<span class='ident'>crypto</span>::<span class='ident'>box_</span>::{<span class='ident'>PrecomputedKey</span>, <span class='ident'>PublicKey</span>, <span class='ident'>SecretKey</span>, <span class='ident'>gen_keypair</span>, <span class='ident'>precompute</span>};
 <span class='kw'>use</span> <span class='ident'>rustc_serialize</span>::{<span class='ident'>Decodable</span>, <span class='ident'>Encodable</span>};
 
 <span class='doccomment'>/// Error types.</span>
@@ -495,13 +493,13 @@
 }
 
 <span class='kw'>impl</span> <span class='ident'>From</span><span class='op'>&lt;</span><span class='ident'>serialisation</span>::<span class='ident'>SerialisationError</span><span class='op'>&gt;</span> <span class='kw'>for</span> <span class='ident'>Error</span> {
-    <span class='kw'>fn</span> <span class='ident'>from</span>(<span class='ident'>orig_error</span>: <span class='ident'>serialisation</span>::<span class='ident'>SerialisationError</span>) <span class='op'>-&gt;</span> <span class='kw'>Self</span> {
+    <span class='kw'>fn</span> <span class='ident'>from</span>(<span class='ident'>orig_error</span>: <span class='ident'>serialisation</span>::<span class='ident'>SerialisationError</span>) <span class='op'>-&gt;</span> <span class='self'>Self</span> {
         <span class='ident'>Error</span>::<span class='ident'>Serialisation</span>(<span class='ident'>orig_error</span>)
     }
 }
 
 <span class='kw'>impl</span> <span class='ident'>From</span><span class='op'>&lt;</span>()<span class='op'>&gt;</span> <span class='kw'>for</span> <span class='ident'>Error</span> {
-    <span class='kw'>fn</span> <span class='ident'>from</span>(_: ()) <span class='op'>-&gt;</span> <span class='kw'>Self</span> {
+    <span class='kw'>fn</span> <span class='ident'>from</span>(_: ()) <span class='op'>-&gt;</span> <span class='self'>Self</span> {
         <span class='ident'>Error</span>::<span class='ident'>Crypto</span>
     }
 }
@@ -551,9 +549,8 @@
                                               <span class='ident'>pre_computed_key</span>: <span class='kw-2'>&amp;</span><span class='ident'>PrecomputedKey</span>)
                                               <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>Error</span><span class='op'>&gt;</span> {
     <span class='kw'>let</span> <span class='ident'>payload</span> <span class='op'>=</span> <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>serialisation</span>::<span class='ident'>deserialise</span>::<span class='op'>&lt;</span><span class='ident'>Payload</span><span class='op'>&gt;</span>(<span class='ident'>message</span>));
-    <span class='kw'>let</span> <span class='ident'>plain_serialised_data</span> <span class='op'>=</span> <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>box_</span>::<span class='ident'>open_precomputed</span>(<span class='kw-2'>&amp;</span><span class='ident'>payload</span>.<span class='ident'>ciphertext</span>,
-                                                            <span class='kw-2'>&amp;</span><span class='ident'>payload</span>.<span class='ident'>nonce</span>,
-                                                            <span class='ident'>pre_computed_key</span>));
+    <span class='kw'>let</span> <span class='ident'>plain_serialised_data</span> <span class='op'>=</span>
+        <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>box_</span>::<span class='ident'>open_precomputed</span>(<span class='kw-2'>&amp;</span><span class='ident'>payload</span>.<span class='ident'>ciphertext</span>, <span class='kw-2'>&amp;</span><span class='ident'>payload</span>.<span class='ident'>nonce</span>, <span class='ident'>pre_computed_key</span>));
     <span class='prelude-val'>Ok</span>(<span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>serialisation</span>::<span class='ident'>deserialise</span>(<span class='kw-2'>&amp;</span><span class='ident'>plain_serialised_data</span>)))
 }
 
@@ -606,10 +603,10 @@
 
 
 <span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>test</span>)]</span>
-<span class='kw'>mod</span> <span class='ident'>test</span> {
-    <span class='kw'>use</span> <span class='ident'>super</span>::<span class='op'>*</span>;
+<span class='kw'>mod</span> <span class='ident'>tests</span> {
     <span class='kw'>use</span> <span class='ident'>rand</span>::{<span class='ident'>Rand</span>, <span class='ident'>Rng</span>};
     <span class='kw'>use</span> <span class='ident'>rand</span>::<span class='ident'>distributions</span>::{<span class='ident'>IndependentSample</span>, <span class='ident'>Range</span>};
+    <span class='kw'>use</span> <span class='kw'>super</span>::<span class='op'>*</span>;
 
     <span class='comment'>// Mutate a single byte of the slice</span>
     <span class='kw'>fn</span> <span class='ident'>tamper</span>(<span class='ident'>bytes</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> [<span class='ident'>u8</span>]) {
@@ -639,9 +636,8 @@
         <span class='kw'>let</span> <span class='ident'>alice_precomputed_key</span> <span class='op'>=</span> <span class='ident'>precompute</span>(<span class='kw-2'>&amp;</span><span class='ident'>bob_public_key</span>, <span class='kw-2'>&amp;</span><span class='ident'>alice_secret_key</span>);
 
         <span class='comment'>// Encrypt message 1 with public and private keys</span>
-        <span class='kw'>let</span> <span class='ident'>bob_encrypted_message1</span> <span class='op'>=</span> <span class='macro'>unwrap_result</span><span class='macro'>!</span>(<span class='ident'>serialise</span>(<span class='kw-2'>&amp;</span><span class='ident'>bob_message1</span>,
-                                                              <span class='kw-2'>&amp;</span><span class='ident'>alice_public_key</span>,
-                                                              <span class='kw-2'>&amp;</span><span class='ident'>bob_secret_key</span>));
+        <span class='kw'>let</span> <span class='ident'>bob_encrypted_message1</span> <span class='op'>=</span>
+            <span class='macro'>unwrap_result</span><span class='macro'>!</span>(<span class='ident'>serialise</span>(<span class='kw-2'>&amp;</span><span class='ident'>bob_message1</span>, <span class='kw-2'>&amp;</span><span class='ident'>alice_public_key</span>, <span class='kw-2'>&amp;</span><span class='ident'>bob_secret_key</span>));
         <span class='comment'>// Encrypt message 2 with precomputed key</span>
         <span class='kw'>let</span> <span class='ident'>bob_encrypted_message2</span> <span class='op'>=</span> <span class='macro'>unwrap_result</span><span class='macro'>!</span>(<span class='ident'>pre_computed_serialise</span>(<span class='kw-2'>&amp;</span><span class='ident'>bob_message2</span>,
                                                                            <span class='kw-2'>&amp;</span><span class='ident'>bob_precomputed_key</span>));
@@ -673,22 +669,22 @@
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>corrupted_message</span> <span class='op'>=</span> <span class='ident'>bob_encrypted_message1</span>.<span class='ident'>clone</span>();
         <span class='ident'>tamper</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>corrupted_message</span>[..]);
         <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>deserialise</span>::<span class='op'>&lt;</span><span class='ident'>Msg</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='ident'>corrupted_message</span>, <span class='kw-2'>&amp;</span><span class='ident'>bob_public_key</span>, <span class='kw-2'>&amp;</span><span class='ident'>alice_secret_key</span>)
-                    .<span class='ident'>is_err</span>());
+            .<span class='ident'>is_err</span>());
         <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>pre_computed_deserialise</span>::<span class='op'>&lt;</span><span class='ident'>Msg</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='ident'>corrupted_message</span>, <span class='kw-2'>&amp;</span><span class='ident'>alice_precomputed_key</span>)
-                    .<span class='ident'>is_err</span>());
+            .<span class='ident'>is_err</span>());
 
         <span class='comment'>// Check we can&#39;t decrypt with invalid keys</span>
         <span class='kw'>let</span> (<span class='ident'>bad_public_key</span>, <span class='ident'>bad_secret_key</span>) <span class='op'>=</span> <span class='ident'>gen_keypair</span>();
         <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>deserialise</span>::<span class='op'>&lt;</span><span class='ident'>Msg</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='ident'>bob_encrypted_message1</span>, <span class='kw-2'>&amp;</span><span class='ident'>bob_public_key</span>, <span class='kw-2'>&amp;</span><span class='ident'>bad_secret_key</span>)
-                    .<span class='ident'>is_err</span>());
+            .<span class='ident'>is_err</span>());
         <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>deserialise</span>::<span class='op'>&lt;</span><span class='ident'>Msg</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='ident'>bob_encrypted_message1</span>, <span class='kw-2'>&amp;</span><span class='ident'>bad_public_key</span>, <span class='kw-2'>&amp;</span><span class='ident'>alice_secret_key</span>)
-                    .<span class='ident'>is_err</span>());
+            .<span class='ident'>is_err</span>());
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>bad_precomputed_key</span> <span class='op'>=</span> <span class='ident'>precompute</span>(<span class='kw-2'>&amp;</span><span class='ident'>bob_public_key</span>, <span class='kw-2'>&amp;</span><span class='ident'>bad_secret_key</span>);
         <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>pre_computed_deserialise</span>::<span class='op'>&lt;</span><span class='ident'>Msg</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='ident'>bob_encrypted_message1</span>, <span class='kw-2'>&amp;</span><span class='ident'>bad_precomputed_key</span>)
-                    .<span class='ident'>is_err</span>());
+            .<span class='ident'>is_err</span>());
         <span class='ident'>bad_precomputed_key</span> <span class='op'>=</span> <span class='ident'>precompute</span>(<span class='kw-2'>&amp;</span><span class='ident'>bad_public_key</span>, <span class='kw-2'>&amp;</span><span class='ident'>alice_secret_key</span>);
         <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>pre_computed_deserialise</span>::<span class='op'>&lt;</span><span class='ident'>Msg</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='ident'>bob_encrypted_message1</span>, <span class='kw-2'>&amp;</span><span class='ident'>bad_precomputed_key</span>)
-                    .<span class='ident'>is_err</span>());
+            .<span class='ident'>is_err</span>());
     }
 
     <span class='attribute'>#[<span class='ident'>test</span>]</span>
@@ -739,6 +735,8 @@
                     <dd>Move down in search results</dd>
                     <dt>&#9166;</dt>
                     <dd>Go to active search result</dd>
+                    <dt>+</dt>
+                    <dd>Collapse/expand all sections</dd>
                 </dl>
             </div>
 
