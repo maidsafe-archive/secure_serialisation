@@ -1,16 +1,15 @@
 [package]
 authors = ["MaidSafe Developers <dev@maidsafe.net>"]
 description = "Functions to encode/decode and encrypt/decrypt data using public-key, authenticated encryption."
-documentation = "http://docs.maidsafe.net/secure_serialisation/latest"
-homepage = "http://maidsafe.net"
-license = "GPL-3.0/MaidSafe.net Commercial License 1.0"
+documentation = "https://docs.rs/secure_serialisation"
+homepage = "https://maidsafe.net"
+license = "GPL-3.0"
 name = "secure_serialisation"
 readme = "README.md"
 repository = "https://github.com/maidsafe/secure_serialisation"
 version = "0.3.0"
 
 [dependencies]
-clippy = {version = "~0.0.81", optional = true}
 maidsafe_utilities = "~0.9.0"
 rust_sodium = "~0.1.1"
 rustc-serialize = "~0.3.19"

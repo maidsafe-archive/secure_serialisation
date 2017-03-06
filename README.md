@@ -2,12 +2,12 @@
 
 **Maintainer:** Spandan Sharma (spandan.sharma@maidsafe.net)
 
-|Crate|Linux/OS X|Windows|Coverage|Issues|
-|:---:|:--------:|:-----:|:------:|:----:|
-|[![](http://meritbadge.herokuapp.com/secure_serialisation)](https://crates.io/crates/secure_serialisation)|[![Build Status](https://travis-ci.org/maidsafe/secure_serialisation.svg?branch=master)](https://travis-ci.org/maidsafe/secure_serialisation)|[![Build status](https://ci.appveyor.com/api/projects/status/fw4t0s9dkipefjuy/branch/master?svg=true)](https://ci.appveyor.com/project/MaidSafe-QA/secure-serialisation/branch/master)|[![Coverage Status](https://coveralls.io/repos/github/maidsafe/secure_serialisation/badge.svg?branch=master)](https://coveralls.io/github/maidsafe/secure_serialisation?branch=master)|[![Stories in Ready](https://badge.waffle.io/maidsafe/secure_serialisation.png?label=ready&title=Ready)](https://waffle.io/maidsafe/secure_serialisation)|
+|Crate|Documentation|Linux/OS X|Windows|Issues|
+|:---:|:-----------:|:--------:|:-----:|:----:|
+|[![](http://meritbadge.herokuapp.com/secure_serialisation)](https://crates.io/crates/secure_serialisation)|[![Documentation](https://docs.rs/secure_serialisation/badge.svg)](https://docs.rs/secure_serialisation)|[![Build Status](https://travis-ci.org/maidsafe/secure_serialisation.svg?branch=master)](https://travis-ci.org/maidsafe/secure_serialisation)|[![Build status](https://ci.appveyor.com/api/projects/status/fw4t0s9dkipefjuy/branch/master?svg=true)](https://ci.appveyor.com/project/MaidSafe-QA/secure-serialisation/branch/master)|[![Stories in Ready](https://badge.waffle.io/maidsafe/secure_serialisation.png?label=ready&title=Ready)](https://waffle.io/maidsafe/secure_serialisation)|
 
-| [API Documentation - master branch](http://docs.maidsafe.net/secure_serialisation/master) | [MaidSafe website](http://maidsafe.net) | [SAFE Network Forum](https://forum.safenetwork.io) |
-|:------:|:-------:|:-------:|:-------:|
+| [MaidSafe website](https://maidsafe.net) | [SAFE Dev Forum](https://forum.safedev.org) | [SAFE Network Forum](https://safenetforum.org) |
+|:----------------------------------------:|:-------------------------------------------:|:----------------------------------------------:|
 
 ## Overview
 
@@ -25,6 +25,5 @@ at your option.
 ## Contribution
 
 Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the
-work by you, as defined in the MaidSafe Contributor Agreement, version 1.1 ([CONTRIBUTOR]
-(CONTRIBUTOR)), shall be dual licensed as above, and you agree to be bound by the terms of the
-MaidSafe Contributor Agreement, version 1.1.
+work by you, as defined in the MaidSafe Contributor Agreement ([CONTRIBUTOR](CONTRIBUTOR)), shall be
+dual licensed as above, and you agree to be bound by the terms of the MaidSafe Contributor Agreement.

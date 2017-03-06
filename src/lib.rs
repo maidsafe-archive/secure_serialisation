@@ -5,8 +5,8 @@
 // licence you accepted on initial access to the Software (the "Licences").
 //
 // By contributing code to the SAFE Network Software, or to this project generally, you agree to be
-// bound by the terms of the MaidSafe Contributor Agreement, version 1.0.  This, along with the
-// Licenses can be found in the root directory of this project at LICENSE, COPYING and CONTRIBUTOR.
+// bound by the terms of the MaidSafe Contributor Agreement.  This, along with the Licenses can be
+// found in the root directory of this project at LICENSE, COPYING and CONTRIBUTOR.
 //
 // Unless required by applicable law or agreed to in writing, the SAFE Network Software distributed
 // under the GPL Licence is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -68,27 +68,22 @@
 
 #![doc(html_logo_url =
            "https://raw.githubusercontent.com/maidsafe/QA/master/Images/maidsafe_logo.png",
-       html_favicon_url = "http://maidsafe.net/img/favicon.ico",
-       html_root_url = "http://maidsafe.github.io/secure_serialisation")]
+       html_favicon_url = "https://maidsafe.net/img/favicon.ico",
+       html_root_url = "https://docs.rs/secure_serialisation")]
 
 // For explanation of lint checks, run `rustc -W help` or see
 // https://github.com/maidsafe/QA/blob/master/Documentation/Rust%20Lint%20Checks.md
 #![forbid(bad_style, exceeding_bitshifts, mutable_transmutes, no_mangle_const_items,
           unknown_crate_types, warnings)]
-#![deny(deprecated, drop_with_repr_extern, improper_ctypes, missing_docs,
-        non_shorthand_field_patterns, overflowing_literals, plugin_as_library,
-        private_no_mangle_fns, private_no_mangle_statics, stable_features, unconditional_recursion,
-        unknown_lints, unsafe_code, unused, unused_allocation, unused_attributes,
-        unused_comparisons, unused_features, unused_parens, while_true)]
+#![deny(deprecated, improper_ctypes, missing_docs, non_shorthand_field_patterns,
+        overflowing_literals, plugin_as_library, private_no_mangle_fns, private_no_mangle_statics,
+        stable_features, unconditional_recursion, unknown_lints, unsafe_code, unused,
+        unused_allocation, unused_attributes, unused_comparisons, unused_features, unused_parens,
+        while_true)]
 #![warn(trivial_casts, trivial_numeric_casts, unused_extern_crates, unused_import_braces,
         unused_qualifications, unused_results)]
 #![allow(box_pointers, fat_ptr_transmutes, missing_copy_implementations,
          missing_debug_implementations, variant_size_differences)]
-
-#![cfg_attr(feature="clippy", feature(plugin))]
-#![cfg_attr(feature="clippy", plugin(clippy))]
-#![cfg_attr(feature="clippy", deny(clippy, clippy_pedantic))]
-#![cfg_attr(feature="clippy", allow(use_debug))]
 
 #[macro_use]
 extern crate maidsafe_utilities;
@@ -138,13 +133,13 @@ pub fn pre_computed_serialise<T: Encodable>(data: &T,
                                             pre_computed_key: &PrecomputedKey)
                                             -> Result<Vec<u8>, Error> {
     let nonce = box_::gen_nonce();
-    let serialised_data = try!(serialisation::serialise(data));
+    let serialised_data = serialisation::serialise(data)?;
     let full_payload = Payload {
         ciphertext: box_::seal_precomputed(&serialised_data, &nonce, pre_computed_key),
         nonce: nonce,
     };
 
-    Ok(try!(serialisation::serialise(&full_payload)))
+    Ok(serialisation::serialise(&full_payload)?)
 }
 
 /// Prepare an encodable data element for transmission to another process whose public key we know.
@@ -153,13 +148,13 @@ pub fn serialise<T: Encodable>(data: &T,
                                our_secret_key: &SecretKey)
                                -> Result<Vec<u8>, Error> {
     let nonce = box_::gen_nonce();
-    let serialised_data = try!(serialisation::serialise(data));
+    let serialised_data = serialisation::serialise(data)?;
     let full_payload = Payload {
         ciphertext: box_::seal(&serialised_data, &nonce, their_public_key, our_secret_key),
         nonce: nonce,
     };
 
-    Ok(try!(serialisation::serialise(&full_payload)))
+    Ok(serialisation::serialise(&full_payload)?)
 }
 
 /// Parse a data type from an encoded message from a sender whose public key we know, and which is
@@ -169,10 +164,10 @@ pub fn serialise<T: Encodable>(data: &T,
 pub fn pre_computed_deserialise<T: Decodable>(message: &[u8],
                                               pre_computed_key: &PrecomputedKey)
                                               -> Result<T, Error> {
-    let payload = try!(serialisation::deserialise::<Payload>(message));
+    let payload = serialisation::deserialise::<Payload>(message)?;
     let plain_serialised_data =
-        try!(box_::open_precomputed(&payload.ciphertext, &payload.nonce, pre_computed_key));
-    Ok(try!(serialisation::deserialise(&plain_serialised_data)))
+        box_::open_precomputed(&payload.ciphertext, &payload.nonce, pre_computed_key)?;
+    Ok(serialisation::deserialise(&plain_serialised_data)?)
 }
 
 /// Parse a data type from an encoded message from a sender whose public key we know.  Success
@@ -182,12 +177,12 @@ pub fn deserialise<T: Decodable>(message: &[u8],
                                  their_public_key: &PublicKey,
                                  our_secret_key: &SecretKey)
                                  -> Result<T, Error> {
-    let payload = try!(serialisation::deserialise::<Payload>(message));
-    let plain_serialised_data = try!(box_::open(&payload.ciphertext,
-                                                &payload.nonce,
-                                                their_public_key,
-                                                our_secret_key));
-    Ok(try!(serialisation::deserialise(&plain_serialised_data)))
+    let payload = serialisation::deserialise::<Payload>(message)?;
+    let plain_serialised_data = box_::open(&payload.ciphertext,
+                                           &payload.nonce,
+                                           their_public_key,
+                                           our_secret_key)?;
+    Ok(serialisation::deserialise(&plain_serialised_data)?)
 }
 
 /// Prepare an encodable data element for transmission to another process, whose public key we know,
@@ -196,14 +191,14 @@ pub fn anonymous_serialise<T: Encodable>(data: &T,
                                          their_public_key: &PublicKey)
                                          -> Result<Vec<u8>, Error> {
     let nonce = box_::gen_nonce();
-    let serialised_data = try!(serialisation::serialise(data));
+    let serialised_data = serialisation::serialise(data)?;
     let (public_key, secret_key) = gen_keypair();
     let full_payload = Payload {
         ciphertext: box_::seal(&serialised_data, &nonce, their_public_key, &secret_key),
         nonce: nonce,
     };
 
-    Ok(try!(serialisation::serialise(&(&public_key, &full_payload))))
+    Ok(serialisation::serialise(&(&public_key, &full_payload))?)
 }
 
 /// Parse a tuple data type from an encoded message from a sender whose public key we do not know.
@@ -212,22 +207,22 @@ pub fn anonymous_serialise<T: Encodable>(data: &T,
 pub fn anonymous_deserialise<T: Decodable>(message: &[u8],
                                            our_secret_key: &SecretKey)
                                            -> Result<T, Error> {
-    let (public_key, payload) = try!(serialisation::deserialise::<([u8; box_::PUBLICKEYBYTES],
-                                                                   Payload)>(message));
-    let plain_serialised_data = try!(box_::open(&payload.ciphertext,
-                                                &payload.nonce,
-                                                &PublicKey(public_key),
-                                                our_secret_key));
-    Ok(try!(serialisation::deserialise(&plain_serialised_data)))
+    let (public_key, payload) = serialisation::deserialise::<([u8; box_::PUBLICKEYBYTES],
+                                                              Payload)>(message)?;
+    let plain_serialised_data = box_::open(&payload.ciphertext,
+                                           &payload.nonce,
+                                           &PublicKey(public_key),
+                                           our_secret_key)?;
+    Ok(serialisation::deserialise(&plain_serialised_data)?)
 }
 
 
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     use rand::{Rand, Rng};
     use rand::distributions::{IndependentSample, Range};
-    use super::*;
 
     // Mutate a single byte of the slice
     fn tamper(bytes: &mut [u8]) {
@@ -270,7 +265,8 @@ mod tests {
         assert_eq!(alice_decrypted_message1, bob_message1);
 
         // Decrypt message 1 with precomputed key
-        alice_decrypted_message1 = unwrap_result!(pre_computed_deserialise(&bob_encrypted_message1,
+        alice_decrypted_message1 =
+            unwrap_result!(pre_computed_deserialise(&bob_encrypted_message1,
                                                     &alice_precomputed_key));
         assert_eq!(alice_decrypted_message1, bob_message1);
 
@@ -282,7 +278,8 @@ mod tests {
         assert_eq!(alice_decrypted_message2, bob_message2);
 
         // Decrypt message 2 with precomputed key
-        alice_decrypted_message2 = unwrap_result!(pre_computed_deserialise(&bob_encrypted_message2,
+        alice_decrypted_message2 =
+            unwrap_result!(pre_computed_deserialise(&bob_encrypted_message2,
                                                     &alice_precomputed_key));
         assert_eq!(alice_decrypted_message2, bob_message2);
 
@@ -290,22 +287,22 @@ mod tests {
         let mut corrupted_message = bob_encrypted_message1.clone();
         tamper(&mut corrupted_message[..]);
         assert!(deserialise::<Msg>(&corrupted_message, &bob_public_key, &alice_secret_key)
-            .is_err());
+                    .is_err());
         assert!(pre_computed_deserialise::<Msg>(&corrupted_message, &alice_precomputed_key)
-            .is_err());
+                    .is_err());
 
         // Check we can't decrypt with invalid keys
         let (bad_public_key, bad_secret_key) = gen_keypair();
         assert!(deserialise::<Msg>(&bob_encrypted_message1, &bob_public_key, &bad_secret_key)
-            .is_err());
+                    .is_err());
         assert!(deserialise::<Msg>(&bob_encrypted_message1, &bad_public_key, &alice_secret_key)
-            .is_err());
+                    .is_err());
         let mut bad_precomputed_key = precompute(&bob_public_key, &bad_secret_key);
         assert!(pre_computed_deserialise::<Msg>(&bob_encrypted_message1, &bad_precomputed_key)
-            .is_err());
+                    .is_err());
         bad_precomputed_key = precompute(&bad_public_key, &alice_secret_key);
         assert!(pre_computed_deserialise::<Msg>(&bob_encrypted_message1, &bad_precomputed_key)
-            .is_err());
+                    .is_err());
     }
 
     #[test]
