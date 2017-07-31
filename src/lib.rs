@@ -73,9 +73,9 @@
 
 // For explanation of lint checks, run `rustc -W help` or see
 // https://github.com/maidsafe/QA/blob/master/Documentation/Rust%20Lint%20Checks.md
-#![forbid(bad_style, exceeding_bitshifts, mutable_transmutes, no_mangle_const_items,
-          unknown_crate_types, warnings)]
-#![deny(deprecated, improper_ctypes, missing_docs, non_shorthand_field_patterns,
+#![forbid(exceeding_bitshifts, mutable_transmutes, no_mangle_const_items, unknown_crate_types,
+          warnings)]
+#![deny(bad_style, deprecated, improper_ctypes, missing_docs, non_shorthand_field_patterns,
         overflowing_literals, plugin_as_library, private_no_mangle_fns, private_no_mangle_statics,
         stable_features, unconditional_recursion, unknown_lints, unsafe_code, unused,
         unused_allocation, unused_attributes, unused_comparisons, unused_features, unused_parens,
@@ -85,18 +85,22 @@
 #![allow(box_pointers, fat_ptr_transmutes, missing_copy_implementations,
          missing_debug_implementations, variant_size_differences)]
 
-#[macro_use]
 extern crate maidsafe_utilities;
 #[cfg(test)]
 extern crate rand;
-extern crate rustc_serialize;
 extern crate rust_sodium;
+extern crate serde;
+#[macro_use]
+extern crate serde_derive;
+#[cfg(test)]
+#[macro_use]
+extern crate unwrap;
 
 use maidsafe_utilities::serialisation;
-
 use rust_sodium::crypto::box_::{self, Nonce};
 pub use rust_sodium::crypto::box_::{PrecomputedKey, PublicKey, SecretKey, gen_keypair, precompute};
-use rustc_serialize::{Decodable, Encodable};
+use serde::de::DeserializeOwned;
+use serde::ser::Serialize;
 
 /// Error types.
 ///
@@ -120,7 +124,7 @@ impl From<()> for Error {
     }
 }
 
-#[derive(RustcEncodable, RustcDecodable)]
+#[derive(Serialize, Deserialize)]
 struct Payload {
     ciphertext: Vec<u8>,
     nonce: Nonce,
@@ -129,9 +133,10 @@ struct Payload {
 /// Prepare an encodable data element for transmission to another process whose public key we
 /// know, and which is pre-computed.  This is less CPU-intensive than
 /// [`serialise()`](fn.serialise.html) which can be useful if many messages are to be transferred.
-pub fn pre_computed_serialise<T: Encodable>(data: &T,
-                                            pre_computed_key: &PrecomputedKey)
-                                            -> Result<Vec<u8>, Error> {
+pub fn pre_computed_serialise<T: Serialize>(
+    data: &T,
+    pre_computed_key: &PrecomputedKey,
+) -> Result<Vec<u8>, Error> {
     let nonce = box_::gen_nonce();
     let serialised_data = serialisation::serialise(data)?;
     let full_payload = Payload {
@@ -143,10 +148,11 @@ pub fn pre_computed_serialise<T: Encodable>(data: &T,
 }
 
 /// Prepare an encodable data element for transmission to another process whose public key we know.
-pub fn serialise<T: Encodable>(data: &T,
-                               their_public_key: &PublicKey,
-                               our_secret_key: &SecretKey)
-                               -> Result<Vec<u8>, Error> {
+pub fn serialise<T: Serialize>(
+    data: &T,
+    their_public_key: &PublicKey,
+    our_secret_key: &SecretKey,
+) -> Result<Vec<u8>, Error> {
     let nonce = box_::gen_nonce();
     let serialised_data = serialisation::serialise(data)?;
     let full_payload = Payload {
@@ -161,9 +167,10 @@ pub fn serialise<T: Encodable>(data: &T,
 /// pre-computed.  This is less CPU-intensive than [`deserialise()`](fn.deserialise.html) which can
 /// be useful if many messages are to be transferred.  Success ensures the message was from the
 /// holder of the private key related to the public key we know of the sender.
-pub fn pre_computed_deserialise<T: Decodable>(message: &[u8],
-                                              pre_computed_key: &PrecomputedKey)
-                                              -> Result<T, Error> {
+pub fn pre_computed_deserialise<T: DeserializeOwned + Serialize>(
+    message: &[u8],
+    pre_computed_key: &PrecomputedKey,
+) -> Result<T, Error> {
     let payload = serialisation::deserialise::<Payload>(message)?;
     let plain_serialised_data =
         box_::open_precomputed(&payload.ciphertext, &payload.nonce, pre_computed_key)?;
@@ -173,23 +180,27 @@ pub fn pre_computed_deserialise<T: Decodable>(message: &[u8],
 /// Parse a data type from an encoded message from a sender whose public key we know.  Success
 /// ensures the message was from the holder of the private key related to the public key we know of
 /// the sender.
-pub fn deserialise<T: Decodable>(message: &[u8],
-                                 their_public_key: &PublicKey,
-                                 our_secret_key: &SecretKey)
-                                 -> Result<T, Error> {
+pub fn deserialise<T: DeserializeOwned + Serialize>(
+    message: &[u8],
+    their_public_key: &PublicKey,
+    our_secret_key: &SecretKey,
+) -> Result<T, Error> {
     let payload = serialisation::deserialise::<Payload>(message)?;
-    let plain_serialised_data = box_::open(&payload.ciphertext,
-                                           &payload.nonce,
-                                           their_public_key,
-                                           our_secret_key)?;
+    let plain_serialised_data = box_::open(
+        &payload.ciphertext,
+        &payload.nonce,
+        their_public_key,
+        our_secret_key,
+    )?;
     Ok(serialisation::deserialise(&plain_serialised_data)?)
 }
 
 /// Prepare an encodable data element for transmission to another process, whose public key we know,
 /// that does not know our public key.
-pub fn anonymous_serialise<T: Encodable>(data: &T,
-                                         their_public_key: &PublicKey)
-                                         -> Result<Vec<u8>, Error> {
+pub fn anonymous_serialise<T: DeserializeOwned + Serialize>(
+    data: &T,
+    their_public_key: &PublicKey,
+) -> Result<Vec<u8>, Error> {
     let nonce = box_::gen_nonce();
     let serialised_data = serialisation::serialise(data)?;
     let (public_key, secret_key) = gen_keypair();
@@ -198,21 +209,23 @@ pub fn anonymous_serialise<T: Encodable>(data: &T,
         nonce: nonce,
     };
 
-    Ok(serialisation::serialise(&(&public_key, &full_payload))?)
+    Ok(serialisation::serialise(&(public_key, full_payload))?)
 }
 
 /// Parse a tuple data type from an encoded message from a sender whose public key we do not know.
 /// Success does not provide any guarantee of correlation between the expected and actual identity
 /// of the message sender.
-pub fn anonymous_deserialise<T: Decodable>(message: &[u8],
-                                           our_secret_key: &SecretKey)
-                                           -> Result<T, Error> {
-    let (public_key, payload) = serialisation::deserialise::<([u8; box_::PUBLICKEYBYTES],
-                                                              Payload)>(message)?;
-    let plain_serialised_data = box_::open(&payload.ciphertext,
-                                           &payload.nonce,
-                                           &PublicKey(public_key),
-                                           our_secret_key)?;
+pub fn anonymous_deserialise<T: DeserializeOwned + Serialize>(
+    message: &[u8],
+    our_secret_key: &SecretKey,
+) -> Result<T, Error> {
+    let (public_key, payload) = serialisation::deserialise::<(PublicKey, Payload)>(message)?;
+    let plain_serialised_data = box_::open(
+        &payload.ciphertext,
+        &payload.nonce,
+        &public_key,
+        our_secret_key,
+    )?;
     Ok(serialisation::deserialise(&plain_serialised_data)?)
 }
 
@@ -240,9 +253,11 @@ mod tests {
 
     #[test]
     fn authenticated_encryption() {
-        let bob_message1 = (generate_random_vec::<u8>(10),
-                            generate_random_vec::<i64>(100),
-                            "Message from Bob for Alice, very secret".to_owned());
+        let bob_message1 = (
+            generate_random_vec::<u8>(10),
+            generate_random_vec::<i64>(100),
+            "Message from Bob for Alice, very secret".to_owned(),
+        );
         let bob_message2 = generate_random_vec::<u8>(1000);
 
         let (alice_public_key, alice_secret_key) = gen_keypair();
@@ -253,70 +268,84 @@ mod tests {
 
         // Encrypt message 1 with public and private keys
         let bob_encrypted_message1 =
-            unwrap_result!(serialise(&bob_message1, &alice_public_key, &bob_secret_key));
+            unwrap!(serialise(&bob_message1, &alice_public_key, &bob_secret_key));
         // Encrypt message 2 with precomputed key
-        let bob_encrypted_message2 = unwrap_result!(pre_computed_serialise(&bob_message2,
-                                                                           &bob_precomputed_key));
+        let bob_encrypted_message2 =
+            unwrap!(pre_computed_serialise(&bob_message2, &bob_precomputed_key));
 
         // Decrypt message 1 with public and private keys
-        let mut alice_decrypted_message1: Msg = unwrap_result!(deserialise(&bob_encrypted_message1,
-                                       &bob_public_key,
-                                       &alice_secret_key));
+        let mut alice_decrypted_message1: Msg = unwrap!(deserialise(
+            &bob_encrypted_message1,
+            &bob_public_key,
+            &alice_secret_key,
+        ));
         assert_eq!(alice_decrypted_message1, bob_message1);
 
         // Decrypt message 1 with precomputed key
-        alice_decrypted_message1 =
-            unwrap_result!(pre_computed_deserialise(&bob_encrypted_message1,
-                                                    &alice_precomputed_key));
+        alice_decrypted_message1 = unwrap!(pre_computed_deserialise(
+            &bob_encrypted_message1,
+            &alice_precomputed_key,
+        ));
         assert_eq!(alice_decrypted_message1, bob_message1);
 
         // Decrypt message 2 with public and private keys
-        let mut alice_decrypted_message2: Vec<u8> =
-            unwrap_result!(deserialise(&bob_encrypted_message2,
-                                       &bob_public_key,
-                                       &alice_secret_key));
+        let mut alice_decrypted_message2: Vec<u8> = unwrap!(deserialise(
+            &bob_encrypted_message2,
+            &bob_public_key,
+            &alice_secret_key,
+        ));
         assert_eq!(alice_decrypted_message2, bob_message2);
 
         // Decrypt message 2 with precomputed key
-        alice_decrypted_message2 =
-            unwrap_result!(pre_computed_deserialise(&bob_encrypted_message2,
-                                                    &alice_precomputed_key));
+        alice_decrypted_message2 = unwrap!(pre_computed_deserialise(
+            &bob_encrypted_message2,
+            &alice_precomputed_key,
+        ));
         assert_eq!(alice_decrypted_message2, bob_message2);
 
         // Tamper with the encrypted message - should fail to deserialise for both methods
         let mut corrupted_message = bob_encrypted_message1.clone();
         tamper(&mut corrupted_message[..]);
-        assert!(deserialise::<Msg>(&corrupted_message, &bob_public_key, &alice_secret_key)
-                    .is_err());
-        assert!(pre_computed_deserialise::<Msg>(&corrupted_message, &alice_precomputed_key)
-                    .is_err());
+        assert!(
+            deserialise::<Msg>(&corrupted_message, &bob_public_key, &alice_secret_key).is_err()
+        );
+        assert!(
+            pre_computed_deserialise::<Msg>(&corrupted_message, &alice_precomputed_key).is_err()
+        );
 
         // Check we can't decrypt with invalid keys
         let (bad_public_key, bad_secret_key) = gen_keypair();
-        assert!(deserialise::<Msg>(&bob_encrypted_message1, &bob_public_key, &bad_secret_key)
-                    .is_err());
-        assert!(deserialise::<Msg>(&bob_encrypted_message1, &bad_public_key, &alice_secret_key)
-                    .is_err());
+        assert!(
+            deserialise::<Msg>(&bob_encrypted_message1, &bob_public_key, &bad_secret_key).is_err()
+        );
+        assert!(
+            deserialise::<Msg>(&bob_encrypted_message1, &bad_public_key, &alice_secret_key).is_err()
+        );
         let mut bad_precomputed_key = precompute(&bob_public_key, &bad_secret_key);
-        assert!(pre_computed_deserialise::<Msg>(&bob_encrypted_message1, &bad_precomputed_key)
-                    .is_err());
+        assert!(
+            pre_computed_deserialise::<Msg>(&bob_encrypted_message1, &bad_precomputed_key).is_err()
+        );
         bad_precomputed_key = precompute(&bad_public_key, &alice_secret_key);
-        assert!(pre_computed_deserialise::<Msg>(&bob_encrypted_message1, &bad_precomputed_key)
-                    .is_err());
+        assert!(
+            pre_computed_deserialise::<Msg>(&bob_encrypted_message1, &bad_precomputed_key).is_err()
+        );
     }
 
     #[test]
     fn anonymous_encryption() {
-        let bob_message = (generate_random_vec::<u8>(10),
-                           generate_random_vec::<i64>(100),
-                           "Message from Bob for Alice, very secret".to_owned());
+        let bob_message = (
+            generate_random_vec::<u8>(10),
+            generate_random_vec::<i64>(100),
+            "Message from Bob for Alice, very secret".to_owned(),
+        );
         let (alice_public_key, alice_secret_key) = gen_keypair();
 
-        let bob_encrypted_message = unwrap_result!(anonymous_serialise(&bob_message,
-                                                                       &alice_public_key));
+        let bob_encrypted_message = unwrap!(anonymous_serialise(&bob_message, &alice_public_key));
 
-        let alice_decrypted_message: Msg =
-            unwrap_result!(anonymous_deserialise(&bob_encrypted_message, &alice_secret_key));
+        let alice_decrypted_message: Msg = unwrap!(anonymous_deserialise(
+            &bob_encrypted_message,
+            &alice_secret_key,
+        ));
         assert_eq!(alice_decrypted_message, bob_message);
 
         // Tamper with the encrypted message - should fail to deserialise

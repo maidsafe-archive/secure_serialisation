@@ -10,9 +10,11 @@ repository = "https://github.com/maidsafe/secure_serialisation"
 version = "0.3.0"
 
 [dependencies]
-maidsafe_utilities = "~0.9.0"
-rust_sodium = "~0.1.1"
-rustc-serialize = "~0.3.19"
+maidsafe_utilities = "~0.14.0"
+rust_sodium = "~0.5.0"
+serde = "~1.0.11"
+serde_derive = "~1.0.11"
 
 [dev-dependencies]
-rand = "~0.3.14"
+rand = "~0.3.15"
+unwrap = "~1.1.0"
