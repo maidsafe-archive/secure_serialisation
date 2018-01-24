@@ -27,13 +27,13 @@ use rust_sodium::crypto::box_::gen_keypair;
 use secure_serialisation::{deserialise, serialise};
 
 fn main() {
-    let (_our_pub_key, our_sec_key) = gen_keypair();
-    let (their_pub_key, _their_sec_key) = gen_keypair();
+    let (our_pub_key, our_sec_key) = gen_keypair();
+    let (their_pub_key, their_sec_key) = gen_keypair();
 
     let data = "hello".to_string();
     let encrypted_data = unwrap!(serialise(&data, &their_pub_key, &our_sec_key));
     println!("Encrypted data: {:?}", encrypted_data);
 
-    let data: String = unwrap!(deserialise(&encrypted_data, &their_pub_key, &our_sec_key));
+    let data: String = unwrap!(deserialise(&encrypted_data, &our_pub_key, &their_sec_key));
     println!("Decrypted data: {:?}", data);
 }
