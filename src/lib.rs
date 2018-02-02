@@ -95,32 +95,33 @@ extern crate serde_derive;
 #[cfg(test)]
 #[macro_use]
 extern crate unwrap;
+#[macro_use]
+extern crate quick_error;
 
 use maidsafe_utilities::serialisation;
 use rust_sodium::crypto::box_::{self, Nonce};
 pub use rust_sodium::crypto::box_::{PrecomputedKey, PublicKey, SecretKey, gen_keypair, precompute};
+use rust_sodium::crypto::sealedbox;
 use serde::de::DeserializeOwned;
 use serde::ser::Serialize;
 
-/// Error types.
-///
-/// Hopefully sodiumoxide eventually defines errors properly, otherwise this makes little sense.
-#[allow(missing_docs)]
-#[derive(Debug)]
-pub enum Error {
-    Serialisation(serialisation::SerialisationError),
-    Crypto,
-}
-
-impl From<serialisation::SerialisationError> for Error {
-    fn from(orig_error: serialisation::SerialisationError) -> Self {
-        Error::Serialisation(orig_error)
-    }
-}
-
-impl From<()> for Error {
-    fn from(_: ()) -> Self {
-        Error::Crypto
+quick_error! {
+    /// Error types.
+    #[derive(Debug)]
+    pub enum Error {
+        /// Failure to serialize/deserialize data.
+        Serialisation(e: serialisation::SerialisationError) {
+            description("Error serializing/deserializing data")
+            display("Error serializing/deserializing data: {}", e)
+            cause(e)
+            from()
+        }
+        /// Failure to encrypt/decrypt data.
+        Crypto(_e: ()) {
+            description("Crypto error")
+            display("Crypto error")
+            from()
+        }
     }
 }
 
@@ -201,15 +202,9 @@ pub fn anonymous_serialise<T: DeserializeOwned + Serialize>(
     data: &T,
     their_public_key: &PublicKey,
 ) -> Result<Vec<u8>, Error> {
-    let nonce = box_::gen_nonce();
     let serialised_data = serialisation::serialise(data)?;
-    let (public_key, secret_key) = gen_keypair();
-    let full_payload = Payload {
-        ciphertext: box_::seal(&serialised_data, &nonce, their_public_key, &secret_key),
-        nonce: nonce,
-    };
-
-    Ok(serialisation::serialise(&(public_key, full_payload))?)
+    let encrypted_data = sealedbox::seal(&serialised_data, their_public_key);
+    Ok(serialisation::serialise(&encrypted_data)?)
 }
 
 /// Parse a tuple data type from an encoded message from a sender whose public key we do not know.
@@ -217,19 +212,13 @@ pub fn anonymous_serialise<T: DeserializeOwned + Serialize>(
 /// of the message sender.
 pub fn anonymous_deserialise<T: DeserializeOwned + Serialize>(
     message: &[u8],
+    our_pub_key: &PublicKey,
     our_secret_key: &SecretKey,
 ) -> Result<T, Error> {
-    let (public_key, payload) = serialisation::deserialise::<(PublicKey, Payload)>(message)?;
-    let plain_serialised_data = box_::open(
-        &payload.ciphertext,
-        &payload.nonce,
-        &public_key,
-        our_secret_key,
-    )?;
+    let encrypted_data = serialisation::deserialise::<Vec<u8>>(message)?;
+    let plain_serialised_data = sealedbox::open(&encrypted_data[..], our_pub_key, our_secret_key)?;
     Ok(serialisation::deserialise(&plain_serialised_data)?)
 }
-
-
 
 #[cfg(test)]
 mod tests {
@@ -344,6 +333,7 @@ mod tests {
 
         let alice_decrypted_message: Msg = unwrap!(anonymous_deserialise(
             &bob_encrypted_message,
+            &alice_public_key,
             &alice_secret_key,
         ));
         assert_eq!(alice_decrypted_message, bob_message);
@@ -351,10 +341,25 @@ mod tests {
         // Tamper with the encrypted message - should fail to deserialise
         let mut corrupted_message = bob_encrypted_message.clone();
         tamper(&mut corrupted_message[..]);
-        assert!(anonymous_deserialise::<Msg>(&corrupted_message, &alice_secret_key).is_err());
+        assert!(
+            anonymous_deserialise::<Msg>(&corrupted_message, &alice_public_key, &alice_secret_key)
+                .is_err()
+        );
 
         // Check we can't decrypt with invalid keys
-        let bad_secret_key = gen_keypair().1;
-        assert!(anonymous_deserialise::<Msg>(&bob_encrypted_message, &bad_secret_key).is_err());
+        let (bad_public_key, bad_secret_key) = gen_keypair();
+        assert!(
+            anonymous_deserialise::<Msg>(&bob_encrypted_message, &bad_public_key, &bad_secret_key)
+                .is_err()
+        );
+        assert!(
+            anonymous_deserialise::<Msg>(&bob_encrypted_message, &bad_public_key, &alice_secret_key)
+                .is_err()
+        );
+        assert!(
+            anonymous_deserialise::<Msg>(&bob_encrypted_message, &alice_public_key, &bad_secret_key)
+                .is_err()
+        );
     }
+
 }
