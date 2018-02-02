@@ -107,17 +107,16 @@ use serde::ser::Serialize;
 
 quick_error! {
     /// Error types.
-    ///
-    /// Hopefully sodiumoxide eventually defines errors properly, otherwise this makes little sense.
-    #[allow(missing_docs)]
     #[derive(Debug)]
     pub enum Error {
+        /// Failure to serialize/deserialize data.
         Serialisation(e: serialisation::SerialisationError) {
             description("Error serializing/deserializing data")
             display("Error serializing/deserializing data: {}", e)
             cause(e)
             from()
         }
+        /// Failure to encrypt/decrypt data.
         Crypto(_e: ()) {
             description("Crypto error")
             display("Crypto error")
