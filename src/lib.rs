@@ -352,5 +352,14 @@ mod tests {
             anonymous_deserialise::<Msg>(&bob_encrypted_message, &bad_public_key, &bad_secret_key)
                 .is_err()
         );
+        assert!(
+            anonymous_deserialise::<Msg>(&bob_encrypted_message, &bad_public_key, &alice_secret_key)
+                .is_err()
+        );
+        assert!(
+            anonymous_deserialise::<Msg>(&bob_encrypted_message, &alice_public_key, &bad_secret_key)
+                .is_err()
+        );
     }
+
 }
