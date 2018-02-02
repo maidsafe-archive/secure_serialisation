@@ -95,6 +95,8 @@ extern crate serde_derive;
 #[cfg(test)]
 #[macro_use]
 extern crate unwrap;
+#[macro_use]
+extern crate quick_error;
 
 use maidsafe_utilities::serialisation;
 use rust_sodium::crypto::box_::{self, Nonce};
@@ -103,25 +105,24 @@ use rust_sodium::crypto::sealedbox;
 use serde::de::DeserializeOwned;
 use serde::ser::Serialize;
 
-/// Error types.
-///
-/// Hopefully sodiumoxide eventually defines errors properly, otherwise this makes little sense.
-#[allow(missing_docs)]
-#[derive(Debug)]
-pub enum Error {
-    Serialisation(serialisation::SerialisationError),
-    Crypto,
-}
-
-impl From<serialisation::SerialisationError> for Error {
-    fn from(orig_error: serialisation::SerialisationError) -> Self {
-        Error::Serialisation(orig_error)
-    }
-}
-
-impl From<()> for Error {
-    fn from(_: ()) -> Self {
-        Error::Crypto
+quick_error! {
+    /// Error types.
+    ///
+    /// Hopefully sodiumoxide eventually defines errors properly, otherwise this makes little sense.
+    #[allow(missing_docs)]
+    #[derive(Debug)]
+    pub enum Error {
+        Serialisation(e: serialisation::SerialisationError) {
+            description("Error serializing/deserializing data")
+            display("Error serializing/deserializing data: {}", e)
+            cause(e)
+            from()
+        }
+        Crypto(_e: ()) {
+            description("Crypto error")
+            display("Crypto error")
+            from()
+        }
     }
 }
 
