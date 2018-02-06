@@ -198,7 +198,7 @@ pub fn deserialise<T: DeserializeOwned + Serialize>(
 
 /// Prepare an encodable data element for transmission to another process, whose public key we know,
 /// that does not know our public key.
-pub fn anonymous_serialise<T: DeserializeOwned + Serialize>(
+pub fn anonymous_serialise<T: Serialize>(
     data: &T,
     their_public_key: &PublicKey,
 ) -> Result<Vec<u8>, Error> {
