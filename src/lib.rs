@@ -74,8 +74,10 @@
         while_true)]
 #![warn(trivial_casts, trivial_numeric_casts, unused_extern_crates, unused_import_braces,
         unused_qualifications, unused_results)]
+// TODO: Remove `renamed_and_removed_lints` once
+// https://github.com/rust-lang-nursery/error-chain/pull/246 has been fixed.
 #![allow(box_pointers, missing_copy_implementations, missing_debug_implementations,
-         variant_size_differences)]
+         variant_size_differences, renamed_and_removed_lints)]
 
 extern crate maidsafe_utilities;
 #[cfg(test)]
@@ -134,7 +136,7 @@ pub fn pre_computed_serialise<T: Serialize>(
     let serialised_data = serialisation::serialise(data)?;
     let full_payload = Payload {
         ciphertext: box_::seal_precomputed(&serialised_data, &nonce, pre_computed_key),
-        nonce: nonce,
+        nonce,
     };
 
     Ok(serialisation::serialise(&full_payload)?)
@@ -150,7 +152,7 @@ pub fn serialise<T: Serialize>(
     let serialised_data = serialisation::serialise(data)?;
     let full_payload = Payload {
         ciphertext: box_::seal(&serialised_data, &nonce, their_public_key, our_secret_key),
-        nonce: nonce,
+        nonce,
     };
 
     Ok(serialisation::serialise(&full_payload)?)
