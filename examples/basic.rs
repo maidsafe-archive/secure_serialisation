@@ -10,8 +10,8 @@
 //! This is a very basic example that demonstrates how to encrypt/decrypt data with
 //! `secure_serialisation` crate.
 
-extern crate secure_serialisation;
 extern crate rust_sodium;
+extern crate secure_serialisation;
 #[macro_use]
 extern crate unwrap;
 
