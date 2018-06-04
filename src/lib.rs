@@ -58,24 +58,32 @@
 //! own message later.  And without additional data, a message cannot be correlated with the
 //! identity of its sender.
 
-#![doc(html_logo_url =
-           "https://raw.githubusercontent.com/maidsafe/QA/master/Images/maidsafe_logo.png",
-       html_favicon_url = "https://maidsafe.net/img/favicon.ico",
-       html_root_url = "https://docs.rs/secure_serialisation")]
-
+#![doc(
+    html_logo_url = "https://raw.githubusercontent.com/maidsafe/QA/master/Images/maidsafe_logo.png",
+    html_favicon_url = "https://maidsafe.net/img/favicon.ico",
+    html_root_url = "https://docs.rs/secure_serialisation"
+)]
 // For explanation of lint checks, run `rustc -W help` or see
 // https://github.com/maidsafe/QA/blob/master/Documentation/Rust%20Lint%20Checks.md
-#![forbid(exceeding_bitshifts, mutable_transmutes, no_mangle_const_items, unknown_crate_types,
-          warnings)]
-#![deny(bad_style, deprecated, improper_ctypes, missing_docs, non_shorthand_field_patterns,
-        overflowing_literals, plugin_as_library, private_no_mangle_fns, private_no_mangle_statics,
-        stable_features, unconditional_recursion, unknown_lints, unsafe_code, unused,
-        unused_allocation, unused_attributes, unused_comparisons, unused_features, unused_parens,
-        while_true)]
-#![warn(trivial_casts, trivial_numeric_casts, unused_extern_crates, unused_import_braces,
-        unused_qualifications, unused_results)]
-#![allow(box_pointers, missing_copy_implementations, missing_debug_implementations,
-         variant_size_differences)]
+#![forbid(
+    exceeding_bitshifts, mutable_transmutes, no_mangle_const_items, unknown_crate_types, warnings
+)]
+#![deny(
+    bad_style, deprecated, improper_ctypes, missing_docs, non_shorthand_field_patterns,
+    overflowing_literals, plugin_as_library, private_no_mangle_fns, private_no_mangle_statics,
+    stable_features, unconditional_recursion, unknown_lints, unsafe_code, unused, unused_allocation,
+    unused_attributes, unused_comparisons, unused_features, unused_parens, while_true
+)]
+#![warn(
+    trivial_casts, trivial_numeric_casts, unused_extern_crates, unused_import_braces,
+    unused_qualifications, unused_results
+)]
+// TODO: Remove `renamed_and_removed_lints` once
+// https://github.com/rust-lang-nursery/error-chain/pull/246 has been fixed.
+#![allow(
+    box_pointers, missing_copy_implementations, missing_debug_implementations,
+    variant_size_differences, renamed_and_removed_lints
+)]
 
 extern crate maidsafe_utilities;
 #[cfg(test)]
@@ -92,7 +100,9 @@ extern crate quick_error;
 
 use maidsafe_utilities::serialisation;
 use rust_sodium::crypto::box_::{self, Nonce};
-pub use rust_sodium::crypto::box_::{PrecomputedKey, PublicKey, SecretKey, gen_keypair, precompute};
+pub use rust_sodium::crypto::box_::{
+    gen_keypair, precompute, PrecomputedKey, PublicKey, SecretKey,
+};
 use rust_sodium::crypto::sealedbox;
 use serde::de::DeserializeOwned;
 use serde::ser::Serialize;
@@ -134,7 +144,7 @@ pub fn pre_computed_serialise<T: Serialize>(
     let serialised_data = serialisation::serialise(data)?;
     let full_payload = Payload {
         ciphertext: box_::seal_precomputed(&serialised_data, &nonce, pre_computed_key),
-        nonce: nonce,
+        nonce,
     };
 
     Ok(serialisation::serialise(&full_payload)?)
@@ -150,7 +160,7 @@ pub fn serialise<T: Serialize>(
     let serialised_data = serialisation::serialise(data)?;
     let full_payload = Payload {
         ciphertext: box_::seal(&serialised_data, &nonce, their_public_key, our_secret_key),
-        nonce: nonce,
+        nonce,
     };
 
     Ok(serialisation::serialise(&full_payload)?)
@@ -215,8 +225,8 @@ pub fn anonymous_deserialise<T: DeserializeOwned + Serialize>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use rand::{Rand, Rng};
     use rand::distributions::{IndependentSample, Range};
+    use rand::{Rand, Rng};
 
     // Mutate a single byte of the slice
     fn tamper(bytes: &mut [u8]) {
@@ -300,7 +310,8 @@ mod tests {
             deserialise::<Msg>(&bob_encrypted_message1, &bob_public_key, &bad_secret_key).is_err()
         );
         assert!(
-            deserialise::<Msg>(&bob_encrypted_message1, &bad_public_key, &alice_secret_key).is_err()
+            deserialise::<Msg>(&bob_encrypted_message1, &bad_public_key, &alice_secret_key)
+                .is_err()
         );
         let mut bad_precomputed_key = precompute(&bob_public_key, &bad_secret_key);
         assert!(
@@ -345,12 +356,18 @@ mod tests {
                 .is_err()
         );
         assert!(
-            anonymous_deserialise::<Msg>(&bob_encrypted_message, &bad_public_key, &alice_secret_key)
-                .is_err()
+            anonymous_deserialise::<Msg>(
+                &bob_encrypted_message,
+                &bad_public_key,
+                &alice_secret_key
+            ).is_err()
         );
         assert!(
-            anonymous_deserialise::<Msg>(&bob_encrypted_message, &alice_public_key, &bad_secret_key)
-                .is_err()
+            anonymous_deserialise::<Msg>(
+                &bob_encrypted_message,
+                &alice_public_key,
+                &bad_secret_key
+            ).is_err()
         );
     }
 
