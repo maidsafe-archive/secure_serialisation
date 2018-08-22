@@ -57,11 +57,10 @@
 //! process.  Without knowing the secret key used for a given message, the sender cannot decrypt its
 //! own message later.  And without additional data, a message cannot be correlated with the
 //! identity of its sender.
-
 #![doc(
     html_logo_url = "https://raw.githubusercontent.com/maidsafe/QA/master/Images/maidsafe_logo.png",
     html_favicon_url = "https://maidsafe.net/img/favicon.ico",
-    html_root_url = "https://docs.rs/secure_serialisation"
+    test(attr(forbid(warnings))),
 )]
 // For explanation of lint checks, run `rustc -W help` or see
 // https://github.com/maidsafe/QA/blob/master/Documentation/Rust%20Lint%20Checks.md
