@@ -109,11 +109,8 @@
     renamed_and_removed_lints
 )]
 
-extern crate maidsafe_utilities;
 #[cfg(test)]
 extern crate rand;
-extern crate rust_sodium;
-extern crate serde;
 #[macro_use]
 extern crate serde_derive;
 #[cfg(test)]
