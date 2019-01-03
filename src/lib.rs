@@ -60,7 +60,7 @@
 #![doc(
     html_logo_url = "https://raw.githubusercontent.com/maidsafe/QA/master/Images/maidsafe_logo.png",
     html_favicon_url = "https://maidsafe.net/img/favicon.ico",
-    test(attr(forbid(warnings))),
+    test(attr(forbid(warnings)))
 )]
 // For explanation of lint checks, run `rustc -W help` or see
 // https://github.com/maidsafe/QA/blob/master/Documentation/Rust%20Lint%20Checks.md
@@ -79,8 +79,6 @@
     non_shorthand_field_patterns,
     overflowing_literals,
     plugin_as_library,
-    private_no_mangle_fns,
-    private_no_mangle_statics,
     stable_features,
     unconditional_recursion,
     unknown_lints,
@@ -111,11 +109,8 @@
     renamed_and_removed_lints
 )]
 
-extern crate maidsafe_utilities;
 #[cfg(test)]
 extern crate rand;
-extern crate rust_sodium;
-extern crate serde;
 #[macro_use]
 extern crate serde_derive;
 #[cfg(test)]
@@ -370,31 +365,33 @@ mod tests {
         // Tamper with the encrypted message - should fail to deserialise
         let mut corrupted_message = bob_encrypted_message.clone();
         tamper(&mut corrupted_message[..]);
-        assert!(
-            anonymous_deserialise::<Msg>(&corrupted_message, &alice_public_key, &alice_secret_key)
-                .is_err()
-        );
+        assert!(anonymous_deserialise::<Msg>(
+            &corrupted_message,
+            &alice_public_key,
+            &alice_secret_key
+        )
+        .is_err());
 
         // Check we can't decrypt with invalid keys
         let (bad_public_key, bad_secret_key) = gen_keypair();
-        assert!(
-            anonymous_deserialise::<Msg>(&bob_encrypted_message, &bad_public_key, &bad_secret_key)
-                .is_err()
-        );
-        assert!(
-            anonymous_deserialise::<Msg>(
-                &bob_encrypted_message,
-                &bad_public_key,
-                &alice_secret_key
-            ).is_err()
-        );
-        assert!(
-            anonymous_deserialise::<Msg>(
-                &bob_encrypted_message,
-                &alice_public_key,
-                &bad_secret_key
-            ).is_err()
-        );
+        assert!(anonymous_deserialise::<Msg>(
+            &bob_encrypted_message,
+            &bad_public_key,
+            &bad_secret_key
+        )
+        .is_err());
+        assert!(anonymous_deserialise::<Msg>(
+            &bob_encrypted_message,
+            &bad_public_key,
+            &alice_secret_key
+        )
+        .is_err());
+        assert!(anonymous_deserialise::<Msg>(
+            &bob_encrypted_message,
+            &alice_public_key,
+            &bad_secret_key
+        )
+        .is_err());
     }
 
 }

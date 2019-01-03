@@ -8,6 +8,7 @@ name = "secure_serialisation"
 readme = "README.md"
 repository = "https://github.com/maidsafe/secure_serialisation"
 version = "0.5.0"
+edition = "2018"
 
 [dependencies]
 maidsafe_utilities = "~0.16.0"
